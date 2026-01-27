@@ -1,22 +1,24 @@
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
-import { createPublicClient, http, parseEther, zeroAddress, type Hex } from 'viem';
-import { baseSepolia } from 'viem/chains';
-import {
-  createKernelAccount,
-  createKernelAccountClient,
-  createZeroDevPaymasterClient,
-} from '@zerodev/sdk';
+import type { Hex } from 'viem';
+
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import {
   toPermissionValidator,
   deserializePermissionAccount,
   serializePermissionAccount,
 } from '@zerodev/permissions';
-import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  createZeroDevPaymasterClient,
+} from '@zerodev/sdk';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
-import { createWalletClient } from 'viem';
+import { createPublicClient, http, parseEther, zeroAddress, createWalletClient } from 'viem';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { getCode } from 'viem/actions';
+import { baseSepolia } from 'viem/chains';
+
 import {
   createVincentViemPkpSigner,
   wrapKernelAccountWithUserOpCapture,
@@ -174,7 +176,15 @@ describe('Custom Viem PKP Signer with ZeroDev', () => {
     // At this point we have a smart account deployed, but it only have the EOA validator
 
     it('should create PKP permission validator', async () => {
-      customPkpSigner = createVincentViemPkpSigner({ privateKey: mockPkpPrivateKey });
+      customPkpSigner = createVincentViemPkpSigner({
+        pkpAddress: mockPkpAccount.address,
+        onSignUserOpHash: async ({ userOpHash }) => {
+          // In a real implementation, this would call a Lit Action to sign with the PKP
+          // For this test, we'll sign directly with the mock PKP private key
+          const message = { raw: userOpHash };
+          return mockPkpAccount.signMessage({ message });
+        },
+      });
       expect(customPkpSigner).toBeDefined();
 
       pkpEcdsaSigner = await toECDSASigner({
@@ -221,7 +231,13 @@ describe('Custom Viem PKP Signer with ZeroDev', () => {
     it('should deserialize permission account', async () => {
       // Create our custom signer to intercept UserOps
       const pkpEmptyAccountWithCustomSigner = createVincentViemPkpSigner({
-        privateKey: mockPkpPrivateKey,
+        pkpAddress: mockPkpAccount.address,
+        onSignUserOpHash: async ({ userOpHash }) => {
+          // In a real implementation, this would call a Lit Action to sign with the PKP
+          // For this test, we'll sign directly with the mock PKP private key
+          const message = { raw: userOpHash };
+          return mockPkpAccount.signMessage({ message });
+        },
       });
 
       // Create ECDSA signer from the custom PKP signer

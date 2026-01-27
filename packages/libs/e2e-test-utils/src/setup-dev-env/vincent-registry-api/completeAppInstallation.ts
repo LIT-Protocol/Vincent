@@ -63,9 +63,7 @@ export async function completeAppInstallation({
       },
       agentSmartAccountDeployment: {
         typedDataSignature: agentSmartAccountDeploymentSignature,
-        dataToSign: {
-          userOperation: agentSmartAccountDeploymentDataToSign.userOperation,
-        },
+        userOperation: agentSmartAccountDeploymentDataToSign.userOperation,
       },
       sessionKeyApproval: {
         typedDataSignature: sessionKeyApprovalSignature,

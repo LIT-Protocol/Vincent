@@ -3,8 +3,8 @@ import {
   createWalletClient,
   http,
   parseEther,
-  type PublicClient,
-  type PrivateKeyAccount,
+  PublicClient,
+  PrivateKeyAccount,
   Chain,
   formatEther,
 } from 'viem';

@@ -1,26 +1,66 @@
+import { EXAMPLE_WALLET_ADDRESS } from '../constants';
 import { z } from './openApiZod';
 
-const signedDataSchema = z
+const appInstallationSignedDataSchema = z
   .object({
     typedDataSignature: z.string().openapi({
-      description: 'The signature of the typed data',
+      description: 'The signature of the EIP2771 typed data',
       example: '0x...',
     }),
     dataToSign: z.object({}).passthrough().openapi({
-      description: 'The original data that was signed',
+      description: 'The original EIP2771 typed data that was signed',
+    }),
+  })
+  .strict();
+
+const agentSmartAccountDeploymentSignedDataSchema = z
+  .object({
+    typedDataSignature: z.string().openapi({
+      description: 'The signature of the UserOperation message hash',
+      example: '0x...',
+    }),
+    userOperation: z.object({}).passthrough().openapi({
+      description: 'The UserOperation that was signed for smart account deployment',
+    }),
+  })
+  .strict();
+
+const sessionKeyApprovalSignedDataSchema = z
+  .object({
+    typedDataSignature: z.string().openapi({
+      description: 'The signature of the session key approval EIP-712 typed data',
+      example: '0x...',
     }),
   })
   .strict();
 
 export const completeInstallationRequest = z
   .object({
-    appInstallation: signedDataSchema.openapi({
+    userControllerAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/)
+      .openapi({
+        description: 'EOA address that controls the user smart wallet',
+        example: EXAMPLE_WALLET_ADDRESS,
+      }),
+    appId: z.number().openapi({
+      description: 'The Vincent app ID',
+      example: 1,
+    }),
+    agentSignerAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/)
+      .openapi({
+        description: 'The PKP address that will be used as the agent signer',
+        example: EXAMPLE_WALLET_ADDRESS,
+      }),
+    appInstallation: appInstallationSignedDataSchema.openapi({
       description: 'Signed EIP2771 typed data for permitAppVersion transaction',
     }),
-    agentSmartAccountDeployment: signedDataSchema.openapi({
-      description: 'Signed UserOperation message for smart account deployment',
+    agentSmartAccountDeployment: agentSmartAccountDeploymentSignedDataSchema.openapi({
+      description: 'Signed UserOperation for smart account deployment',
     }),
-    sessionKeyApproval: signedDataSchema.openapi({
+    sessionKeyApproval: sessionKeyApprovalSignedDataSchema.openapi({
       description: 'Signed permission account data for session key approval',
     }),
   })

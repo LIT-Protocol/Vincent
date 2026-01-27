@@ -1437,26 +1437,30 @@ export type CompleteInstallationResponse = {
   completeAppInstallationTransactionHash: string;
 };
 export type CompleteInstallationRequest = {
+  /** EOA address that controls the user smart wallet */
+  userControllerAddress: string;
+  /** The Vincent app ID */
+  appId: number;
+  /** The PKP address that will be used as the agent signer */
+  agentSignerAddress: string;
   /** Signed EIP2771 typed data for permitAppVersion transaction */
   appInstallation: {
-    /** The signature of the typed data */
+    /** The signature of the EIP2771 typed data */
     typedDataSignature: string;
-    /** The original data that was signed */
+    /** The original EIP2771 typed data that was signed */
     dataToSign: {};
   };
-  /** Signed UserOperation message for smart account deployment */
+  /** Signed UserOperation for smart account deployment */
   agentSmartAccountDeployment: {
-    /** The signature of the typed data */
+    /** The signature of the UserOperation message hash */
     typedDataSignature: string;
-    /** The original data that was signed */
-    dataToSign: {};
+    /** The UserOperation that was signed for smart account deployment */
+    userOperation: {};
   };
   /** Signed permission account data for session key approval */
   sessionKeyApproval: {
-    /** The signature of the typed data */
+    /** The signature of the session key approval EIP-712 typed data */
     typedDataSignature: string;
-    /** The original data that was signed */
-    dataToSign: {};
   };
 };
 export type GetAgentAccountResponse = {
