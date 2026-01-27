@@ -1,6 +1,7 @@
+import type { AppMetadata } from './setupVincentDevEnv';
+
 import { handleAppRegistration } from './app-registration/handeAppRegistration';
 import { setActiveVersion } from './vincent-registry-api/setActiveAppVersion';
-import type { AppMetadata } from './setupVincentDevEnv';
 
 export interface SetupVincentAppParams {
   vincentApiUrl: string;

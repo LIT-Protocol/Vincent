@@ -1,12 +1,13 @@
 import type { Address, Chain } from 'viem';
-import { createPublicClient, http } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import { addressToEmptyAccount, createKernelAccount } from '@zerodev/sdk';
+
 import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { serializePermissionAccount, toPermissionValidator } from '@zerodev/permissions';
-import { toECDSASigner } from '@zerodev/permissions/signers';
 import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
+import { addressToEmptyAccount, createKernelAccount } from '@zerodev/sdk';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
+import { createPublicClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 /**
  * Creates a serialized permission approval that allows a session key (PKP) to act on behalf of the smart account.

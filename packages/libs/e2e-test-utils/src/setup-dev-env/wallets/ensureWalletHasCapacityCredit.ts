@@ -1,4 +1,5 @@
 import { Wallet, providers } from 'ethers';
+
 import { LitContracts } from '@lit-protocol/contracts-sdk';
 
 interface CapacityToken {

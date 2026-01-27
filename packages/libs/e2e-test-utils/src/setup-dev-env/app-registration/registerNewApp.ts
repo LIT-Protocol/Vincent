@@ -1,8 +1,10 @@
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { providers, Wallet } from 'ethers';
 
-import { registerApp } from '../vincent-registry-api/registerApp';
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
+
 import type { AppMetadata } from '../setupVincentDevEnv';
+
+import { registerApp } from '../vincent-registry-api/registerApp';
 
 export interface NewAppRegistration {
   appId: number;

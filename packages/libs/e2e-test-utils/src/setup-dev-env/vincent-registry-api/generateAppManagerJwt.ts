@@ -1,6 +1,8 @@
-import { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
-import { createPlatformUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 import { Wallet } from 'ethers';
+
+import type { PKPEthersWallet } from '@lit-protocol/pkp-ethers';
+
+import { createPlatformUserJWT } from '@lit-protocol/vincent-app-sdk/jwt';
 
 export async function generateAppManagerJwt({
   appManagerPrivateKey,

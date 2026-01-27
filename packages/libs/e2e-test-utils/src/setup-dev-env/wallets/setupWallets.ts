@@ -1,16 +1,17 @@
-import {
+import type {
+  Chain,
   createPublicClient,
   createWalletClient,
   http,
   parseEther,
   type PublicClient,
   type PrivateKeyAccount,
-  Chain,
   formatEther,
 } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import { defineChain } from 'viem';
+
 import { Wallet, providers } from 'ethers';
+import { defineChain } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 
 import { ensureWalletHasCapacityCredit } from './ensureWalletHasCapacityCredit';
 import { ensureWalletHasTokens } from './ensureWalletHasTokens';

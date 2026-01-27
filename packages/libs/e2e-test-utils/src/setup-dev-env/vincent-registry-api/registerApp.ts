@@ -1,5 +1,6 @@
-import { generateAppManagerJwt } from './generateAppManagerJwt';
 import type { AppMetadata } from '../setupVincentDevEnv';
+
+import { generateAppManagerJwt } from './generateAppManagerJwt';
 
 export async function registerApp({
   vincentApiUrl,

@@ -1,10 +1,13 @@
-import { getClient, type App, deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 import { providers, Wallet } from 'ethers';
 import { toHex } from 'viem';
 
-import { areAbilitiesAndPoliciesEqual } from './areAbilitiesAndPoliciesEqual';
-import { registerAppVersion } from '../vincent-registry-api/registerAppVersion';
+import type { App } from '@lit-protocol/vincent-contracts-sdk';
+
+import { getClient, deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
+
 import { registerNewAppVersionOnChain } from '../blockchain/registerNewAppVersionOnChain';
+import { registerAppVersion } from '../vincent-registry-api/registerAppVersion';
+import { areAbilitiesAndPoliciesEqual } from './areAbilitiesAndPoliciesEqual';
 
 export interface NewAppVersionRegistration {
   appId: number;
