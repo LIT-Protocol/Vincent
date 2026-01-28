@@ -1157,6 +1157,9 @@ importers:
       '@lit-protocol/flags':
         specifier: ^2.1.0
         version: 2.1.0
+      '@lit-protocol/vincent-ability-relay-link':
+        specifier: workspace:*
+        version: link:../ability-relay-link
       '@lit-protocol/vincent-app-sdk':
         specifier: ^2.6.1
         version: 2.6.1(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))

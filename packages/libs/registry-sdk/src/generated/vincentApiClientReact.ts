@@ -167,6 +167,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['App'],
       }),
+      executeBatchAbility: build.mutation<
+        ExecuteBatchAbilityApiResponse,
+        ExecuteBatchAbilityApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/app/${encodeURIComponent(String(queryArg.abilityName))}/execute`,
+          method: 'POST',
+          body: queryArg.executeBatchAbilityRequest,
+        }),
+        invalidatesTags: ['App', 'Ability'],
+      }),
       listAllAbilities: build.query<ListAllAbilitiesApiResponse, ListAllAbilitiesApiArg>({
         query: () => ({ url: `/abilities` }),
         providesTags: ['Ability'],
@@ -579,6 +590,14 @@ export type SetAppActiveVersionApiArg = {
   /** The version to set as active */
   appSetActiveVersion: AppSetActiveVersion;
 };
+export type ExecuteBatchAbilityApiResponse =
+  /** status 200 Batch execution completed (some delegators may have failed, check individual results) */ ExecuteBatchAbilityResponse;
+export type ExecuteBatchAbilityApiArg = {
+  /** URL-friendly ability name (e.g., "relay-link") */
+  abilityName: string;
+  /** Batch execution request with delegatee credentials and delegator parameters */
+  executeBatchAbilityRequest: ExecuteBatchAbilityRequest;
+};
 export type ListAllAbilitiesApiResponse = /** status 200 Successful operation */ AbilityListRead;
 export type ListAllAbilitiesApiArg = void;
 export type CreateAbilityApiResponse = /** status 200 Successful operation */ AbilityRead;
@@ -985,6 +1004,45 @@ export type AppVersionAbilityEdit = {
 export type AppSetActiveVersion = {
   /** The version to set as active */
   activeVersion: number;
+};
+export type DelegatorExecutionResultSuccess = {
+  success: true;
+  /** Transaction hash of the executed UserOperation */
+  transactionHash: string;
+  /** UserOperation hash */
+  userOpHash: string;
+};
+export type DelegatorExecutionResultFailure = {
+  success: false;
+  /** Error message describing why the execution failed */
+  error: string;
+};
+export type DelegatorExecutionResult =
+  | DelegatorExecutionResultSuccess
+  | DelegatorExecutionResultFailure;
+export type ExecuteBatchAbilityResponse = {
+  /** Map of delegator addresses to their execution results */
+  results: {
+    [key: string]: DelegatorExecutionResult;
+  };
+};
+export type BatchDelegator = {
+  /** Ethereum address of the delegator (user who delegated ability to the app) */
+  delegatorAddress: string;
+  /** Ability-specific parameters for this delegator, which override the defaults */
+  abilityParams: {
+    [key: string]: any | null;
+  };
+};
+export type ExecuteBatchAbilityRequest = {
+  /** Private key of the delegatee (app PKP). Used to derive the app ID automatically. */
+  delegateePrivateKey: string;
+  /** Default parameters for the ability execution that apply to all delegators unless overridden */
+  defaults?: {
+    [key: string]: any | null;
+  };
+  /** Array of delegators to execute the ability for */
+  delegators: BatchDelegator[];
 };
 export type Ability = {
   /** Timestamp when this was last modified */
@@ -1569,6 +1627,7 @@ export const {
   useUndeleteAppVersionMutation,
   useUndeleteAppVersionAbilityMutation,
   useSetAppActiveVersionMutation,
+  useExecuteBatchAbilityMutation,
   useListAllAbilitiesQuery,
   useLazyListAllAbilitiesQuery,
   useCreateAbilityMutation,

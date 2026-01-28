@@ -16,6 +16,9 @@ import { toSudoPolicy } from '@zerodev/permissions/policies';
 import { completeRelayTransaction } from './completeRelayTransaction';
 import { getSmartAccountPublicClient, getSmartAccountChain } from './chainConfig';
 import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
+import { UserAppInstallation } from './mongo/userAppInstallation';
+import { deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
+import { App } from './mongo/app';
 
 export async function completeInstallation(request: {
   userControllerAddress: Address;
@@ -68,6 +71,43 @@ export async function completeInstallation(request: {
     '[completeInstallation] App installation completed:',
     completeAppInstallationResult.transactionHash,
   );
+
+  // Step 4: Save the serialized permission account to database
+  console.log('[completeInstallation] Saving serialized permission account to database...');
+  const smartAccountPublicClient = getSmartAccountPublicClient();
+  const smartAccountChain = getSmartAccountChain();
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    smartAccountPublicClient,
+    request.userControllerAddress,
+    request.appId,
+  );
+
+  // Get the app version from the app record
+  const app = await App.findOne({ appId: request.appId, isDeleted: false });
+  if (!app || app.activeVersion === undefined || app.activeVersion === null) {
+    throw new Error(
+      `Cannot save installation: app ${request.appId} not found or has no active version`,
+    );
+  }
+
+  // Use updateOne with upsert to handle race conditions and idempotency
+  await UserAppInstallation.updateOne(
+    {
+      userControllerAddress: request.userControllerAddress.toLowerCase(),
+      appId: request.appId,
+      appVersion: app.activeVersion,
+      chainId: smartAccountChain.id,
+    },
+    {
+      $set: {
+        agentSmartAccountAddress: agentSmartAccountAddress.toLowerCase(),
+        agentSignerAddress: request.agentSignerAddress.toLowerCase(),
+        serializedPermissionAccount,
+      },
+    },
+    { upsert: true },
+  );
+  console.log('[completeInstallation] Serialized permission account saved to database');
 
   return {
     deployAgentSmartAccountTransactionHash,
