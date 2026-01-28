@@ -1650,11 +1650,6 @@
             "description": "EOA address that controls the user smart wallet",
             "example": "0x123456789012345678901234567890123456abcd"
           },
-          "appId": {
-            "type": "number",
-            "description": "The Vincent app ID",
-            "example": 1
-          },
           "agentSignerAddress": {
             "type": "string",
             "pattern": "^0x[a-fA-F0-9]{40}$",
@@ -1753,7 +1748,6 @@
         },
         "required": [
           "userControllerAddress",
-          "appId",
           "agentSignerAddress",
           "appInstallation",
           "agentSmartAccountDeployment",

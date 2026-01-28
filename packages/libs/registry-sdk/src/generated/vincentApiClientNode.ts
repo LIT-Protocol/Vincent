@@ -1497,8 +1497,6 @@ export type CompleteInstallationResponse = {
 export type CompleteInstallationRequest = {
   /** EOA address that controls the user smart wallet */
   userControllerAddress: string;
-  /** The Vincent app ID */
-  appId: number;
   /** The PKP address that will be used as the agent signer */
   agentSignerAddress: string;
   /** Signed EIP2771 typed data for permitAppVersion transaction */

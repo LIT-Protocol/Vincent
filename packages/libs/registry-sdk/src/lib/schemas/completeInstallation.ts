@@ -47,10 +47,6 @@ export const completeInstallationRequest = z
         description: 'EOA address that controls the user smart wallet',
         example: EXAMPLE_WALLET_ADDRESS,
       }),
-    appId: z.number().openapi({
-      description: 'The Vincent app ID',
-      example: 1,
-    }),
     agentSignerAddress: z
       .string()
       .regex(/^0x[a-fA-F0-9]{40}$/)

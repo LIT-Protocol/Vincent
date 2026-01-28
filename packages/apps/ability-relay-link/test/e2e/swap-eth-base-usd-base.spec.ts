@@ -9,7 +9,8 @@ import {
 } from '@lit-protocol/vincent-e2e-test-utils';
 import { disconnectVincentAbilityClients } from '@lit-protocol/vincent-app-sdk/abilityClient';
 
-import { bundledVincentAbility as relayLinkAbility } from '../../src';
+// TODO Reenable use to dynamically fetch the IPFS CID of the relay.link ability
+// import { bundledVincentAbility as relayLinkAbility } from '../../src';
 
 jest.setTimeout(300000); // 5 minutes
 
@@ -55,6 +56,8 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
         userEoa: TEST_USER_EOA_PRIVATE_KEY as `0x${string}`,
       },
       abilityIpfsCids: [
+        // TODO The Vincent registry currently has v2.0.0-alpha of
+        // the relay.link ability, so we need to use the same IPFS CID
         // relayLinkAbility.ipfsCid
         'QmUSDv7XougqNrpzjdryJEGibbnyRKWJjGTmptcYMr8oKk',
       ],
@@ -87,7 +90,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
     });
 
     await ensureWalletHasTokens({
-      address: env.agentSmartAccount.address as `0x${string}`,
+      address: env.agentSmartAccount!.address as `0x${string}`,
       funderWalletClient: baseMainnetFunderWalletClient as any,
       publicClient: createPublicClient({
         chain: RELAY_CHAIN as any,
@@ -150,8 +153,8 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
           userOpHash: delegatorResult.userOpHash,
           transactionHash: delegatorResult.transactionHash,
           txUrl: `https://basescan.org/tx/${delegatorResult.transactionHash}`,
-          smartAccountAddress: env.agentSmartAccount.address,
-          signerPkp: env.agentSmartAccount.agentSignerAddress,
+          smartAccountAddress: env.agentSmartAccount!.address,
+          signerPkp: env.agentSmartAccount!.agentSignerAddress,
         });
       } else {
         throw new Error(`Execution failed: ${delegatorResult.error}`);
@@ -206,8 +209,8 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
           userOpHash: delegatorResult.userOpHash,
           transactionHash: delegatorResult.transactionHash,
           txUrl: `https://basescan.org/tx/${delegatorResult.transactionHash}`,
-          smartAccountAddress: env.agentSmartAccount.address,
-          signerPkp: env.agentSmartAccount.agentSignerAddress,
+          smartAccountAddress: env.agentSmartAccount!.address,
+          signerPkp: env.agentSmartAccount!.agentSignerAddress,
         });
       } else {
         throw new Error(`Execution failed: ${delegatorResult.error}`);
@@ -222,7 +225,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
         transport: http(BASE_MAINNET_RPC_URL),
       });
       const code = await provider.getCode({
-        address: env.agentSmartAccount.address as `0x${string}`,
+        address: env.agentSmartAccount!.address as `0x${string}`,
       });
 
       expect(code).toBeDefined();
@@ -230,7 +233,7 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
       expect(code?.length).toBeGreaterThan(2);
 
       console.log('[Smart Account Deployed on Base Mainnet]', {
-        address: env.agentSmartAccount.address,
+        address: env.agentSmartAccount!.address,
         chain: `${RELAY_CHAIN.name} (${RELAY_CHAIN_ID})`,
         codeLength: code?.length,
       });
