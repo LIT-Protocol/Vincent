@@ -200,12 +200,12 @@ async function approveSessionKeyWithSignature(
   });
 
   // Serialize the permission account with the user's signature
-  // This creates a string that can be stored and later deserialized by the PKP
+  // This creates a base64-encoded string that can be stored and later deserialized by the PKP
   const serializedPermissionAccount = await serializePermissionAccount(
     userEoaKernelAccount,
     undefined,
     signature,
   );
 
-  return JSON.stringify(serializedPermissionAccount);
+  return serializedPermissionAccount;
 }
