@@ -8,9 +8,7 @@ import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 import { entryPoint07Address } from 'viem/account-abstraction';
 import { getVincentAbilityClient } from '@lit-protocol/vincent-app-sdk/abilityClient';
 import {
-  // @ts-expect-error - TODO: fix this typing
   createVincentViemPkpSigner,
-  // @ts-expect-error - TODO: fix this typing
   wrapKernelAccountWithUserOpCapture,
 } from '@lit-protocol/vincent-app-sdk/utils';
 import {

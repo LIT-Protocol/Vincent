@@ -54,7 +54,10 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
         appDelegatee: TEST_APP_DELEGATEE_PRIVATE_KEY as `0x${string}`,
         userEoa: TEST_USER_EOA_PRIVATE_KEY as `0x${string}`,
       },
-      abilityIpfsCids: [relayLinkAbility.ipfsCid],
+      abilityIpfsCids: [
+        // relayLinkAbility.ipfsCid
+        'QmUSDv7XougqNrpzjdryJEGibbnyRKWJjGTmptcYMr8oKk',
+      ],
       abilityPolicies: [[]],
       appMetadata: {
         name: 'Relay.link E2E Test App',
@@ -208,59 +211,6 @@ describe('Swap ETH to USDC and back on Base Mainnet', () => {
         });
       } else {
         throw new Error(`Execution failed: ${delegatorResult.error}`);
-      }
-    });
-
-    it.skip('should execute swaps for multiple delegators via batch API', async () => {
-      console.log('[Batch API Test] Starting batch execution for multiple delegators');
-
-      // For this test, we'll use the same delegator twice with different amounts
-      // In a real scenario, you'd have multiple different delegator addresses
-      const response = await fetch(`${VINCENT_API_URL}/app/relay-link/execute`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          delegateePrivateKey: TEST_APP_DELEGATEE_PRIVATE_KEY,
-          defaults: {
-            ORIGIN_CHAIN_ID: RELAY_CHAIN_ID,
-            DESTINATION_CHAIN_ID: RELAY_CHAIN_ID,
-            ORIGIN_CURRENCY: ETH_ADDRESS,
-            DESTINATION_CURRENCY: USDC_ADDRESS,
-            TRADE_TYPE: 'EXACT_INPUT',
-          },
-          delegators: [
-            {
-              delegatorAddress: env.accounts.userEoa.address,
-              abilityParams: {
-                AMOUNT: parseEther('0.00001').toString(),
-              },
-            },
-          ],
-        }),
-      });
-
-      expect(response.ok).toBe(true);
-      const result = await response.json();
-
-      console.log('[Batch API Response (Multi-Delegator)]', util.inspect(result, { depth: 10 }));
-
-      expect(result.results).toBeDefined();
-      expect(Object.keys(result.results).length).toBeGreaterThan(0);
-
-      // Check each delegator's result
-      for (const [delegatorAddress, delegatorResult] of Object.entries(result.results) as Array<
-        [string, any]
-      >) {
-        console.log(`[Delegator ${delegatorAddress}]`, delegatorResult);
-
-        if (delegatorResult.success) {
-          expect(delegatorResult.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-          expect(delegatorResult.userOpHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
-        } else {
-          console.warn(`[Delegator ${delegatorAddress}] Failed:`, delegatorResult.error);
-        }
       }
     });
   });

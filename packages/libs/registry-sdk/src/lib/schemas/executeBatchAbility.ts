@@ -3,27 +3,31 @@ import { z } from './openApiZod';
 /**
  * Default parameters that can be overridden per delegator
  */
-export const executeBatchDefaults = z.record(z.any()).openapi({
-  description:
-    'Default parameters for the ability execution that apply to all delegators unless overridden',
-  example: {
-    ORIGIN_CHAIN_ID: 8453,
-    DESTINATION_CHAIN_ID: 8453,
-    ORIGIN_CURRENCY: '0x0000000000000000000000000000000000000000',
-    DESTINATION_CURRENCY: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-    TRADE_TYPE: 'EXACT_INPUT',
-  },
-});
+export const executeBatchDefaults = z
+  .record(z.union([z.string(), z.number(), z.boolean()]))
+  .openapi({
+    description:
+      'Default parameters for the ability execution that apply to all delegators unless overridden',
+    example: {
+      ORIGIN_CHAIN_ID: 8453,
+      DESTINATION_CHAIN_ID: 8453,
+      ORIGIN_CURRENCY: '0x0000000000000000000000000000000000000000',
+      DESTINATION_CURRENCY: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      TRADE_TYPE: 'EXACT_INPUT',
+    },
+  });
 
 /**
  * Ability parameters for a single delegator's execution
  */
-export const delegatorAbilityParams = z.record(z.any()).openapi({
-  description: 'Ability-specific parameters for this delegator, which override the defaults',
-  example: {
-    AMOUNT: '1000000000000000000', // 1 ETH
-  },
-});
+export const delegatorAbilityParams = z
+  .record(z.union([z.string(), z.number(), z.boolean()]))
+  .openapi({
+    description: 'Ability-specific parameters for this delegator, which override the defaults',
+    example: {
+      AMOUNT: '1000000000000000000', // 1 ETH
+    },
+  });
 
 /**
  * A single delegator in the batch execution request

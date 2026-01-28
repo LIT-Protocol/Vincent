@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-app-sdk",
-  "version": "2.6.1",
+  "version": "2.7.0-alpha",
   "description": "Vincent SDK for browser and backend",
   "author": "Lit Protocol",
   "license": "ISC",
