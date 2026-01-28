@@ -34,6 +34,7 @@ export const env = createEnv({
     VINCENT_REGISTRY_RPC_URL: z.string(),
     VINCENT_REGISTRY_CHAIN_ID: z.coerce.number(),
     ALCHEMY_API_KEY: z.string(),
+    ALCHEMY_SIMULATION_RPC_URL: z.string(),
     SMART_ACCOUNT_CHAIN_RPC_URL: z.string(),
     SMART_ACCOUNT_CHAIN_ID: z.coerce.number(),
     ZERODEV_PROJECT_ID: z.string(),

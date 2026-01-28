@@ -29,7 +29,7 @@ export interface VincentDevEnvironment {
     vincentRegistryPublicClient: PublicClient;
     chronicleYellowstonePublicClient: PublicClient;
   };
-  agentSmartAccount: {
+  agentSmartAccount?: {
     address: Address;
     agentSignerAddress: Address;
     deploymentTxHash?: string;
@@ -79,6 +79,11 @@ export interface SetupConfig {
   abilityIpfsCids: string[];
   abilityPolicies: string[][];
   funding?: FundingConfig;
+  /**
+   * If true, skips Phase 3 (agent smart account setup).
+   * Use this when the smart account will be created later (e.g., via Privy in a frontend app).
+   */
+  skipSmartAccountSetup?: boolean;
 }
 
 export async function setupVincentDevelopmentEnvironment(
@@ -112,15 +117,21 @@ export async function setupVincentDevelopmentEnvironment(
   });
 
   // Phase 3: Setup user's agent smart account (sign typed data and complete installation)
-  const agentSmartAccountInfo = await setupAgentSmartAccount({
-    vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
-    vincentApiUrl: config.vincentApiUrl,
-    vincentRegistryChain: config.vincentRegistryChain,
-    smartAccountChainRpcUrl: config.smartAccountChainRpcUrl,
-    smartAccountChain: config.smartAccountChain,
-    userEoaPrivateKey: config.privateKeys.userEoa,
-    vincentAppId: appInfo.appId,
-  });
+  // Skip this phase if skipSmartAccountSetup is true (e.g., for apps using Privy)
+  let agentSmartAccountInfo;
+  if (!config.skipSmartAccountSetup) {
+    agentSmartAccountInfo = await setupAgentSmartAccount({
+      vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
+      vincentApiUrl: config.vincentApiUrl,
+      vincentRegistryChain: config.vincentRegistryChain,
+      smartAccountChainRpcUrl: config.smartAccountChainRpcUrl,
+      smartAccountChain: config.smartAccountChain,
+      userEoaPrivateKey: config.privateKeys.userEoa,
+      vincentAppId: appInfo.appId,
+    });
+  } else {
+    console.log('Skipping agent smart account setup');
+  }
 
   console.log('=== Vincent Development Environment Setup Complete ===');
 
@@ -135,12 +146,14 @@ export async function setupVincentDevelopmentEnvironment(
     accounts,
     ethersWallets,
     clients,
-    agentSmartAccount: {
-      address: agentSmartAccountInfo.agentSmartAccountAddress,
-      agentSignerAddress: agentSmartAccountInfo.agentSignerAddress,
-      deploymentTxHash: agentSmartAccountInfo.deploymentTxHash,
-      serializedPermissionAccount: agentSmartAccountInfo.serializedPermissionAccount,
-      permitAppVersionTxHash: agentSmartAccountInfo.permitAppVersionTxHash,
-    },
+    agentSmartAccount: agentSmartAccountInfo
+      ? {
+          address: agentSmartAccountInfo.agentSmartAccountAddress,
+          agentSignerAddress: agentSmartAccountInfo.agentSignerAddress,
+          deploymentTxHash: agentSmartAccountInfo.deploymentTxHash,
+          serializedPermissionAccount: agentSmartAccountInfo.serializedPermissionAccount,
+          permitAppVersionTxHash: agentSmartAccountInfo.permitAppVersionTxHash,
+        }
+      : undefined,
   };
 }

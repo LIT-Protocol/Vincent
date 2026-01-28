@@ -9,6 +9,10 @@ import {
   appVersionAbilityEdit,
   appVersionAbilityDoc,
 } from '../schemas/appVersion';
+import {
+  executeBatchAbilityRequest,
+  executeBatchAbilityResponse,
+} from '../schemas/executeBatchAbility';
 import { z } from '../schemas/openApiZod';
 import { GenericResult, ErrorResponse, jwtAuth } from './baseRegistry';
 
@@ -870,6 +874,81 @@ export function addToRegistry(registry: OpenAPIRegistry) {
       },
       422: {
         description: 'Validation exception',
+      },
+      default: {
+        description: 'Unexpected error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  const abilityNameParam = z
+    .string()
+    .openapi({
+      param: {
+        description: 'URL-friendly ability name (e.g., "relay-link")',
+        example: 'relay-link',
+      },
+    });
+
+  const ExecuteBatchAbilityRequest = registry.register(
+    'ExecuteBatchAbilityRequest',
+    executeBatchAbilityRequest,
+  );
+  const ExecuteBatchAbilityResponse = registry.register(
+    'ExecuteBatchAbilityResponse',
+    executeBatchAbilityResponse,
+  );
+
+  // POST /app/{abilityName}/execute - Execute an ability for multiple delegators in batch
+  registry.registerPath({
+    method: 'post',
+    path: '/app/{abilityName}/execute',
+    tags: ['App', 'Ability'],
+    summary: 'Executes an ability for multiple delegators in batch',
+    description:
+      'Executes a Vincent ability for multiple delegators using a shared delegatee private key. ' +
+      'Each delegator can have custom parameters that override the defaults. ' +
+      'The delegatee app ID is automatically looked up from the private key.',
+    operationId: 'executeBatchAbility',
+    request: {
+      params: z.object({
+        abilityName: abilityNameParam,
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: ExecuteBatchAbilityRequest,
+          },
+        },
+        description: 'Batch execution request with delegatee credentials and delegator parameters',
+        required: true,
+      },
+    },
+    responses: {
+      200: {
+        description:
+          'Batch execution completed (some delegators may have failed, check individual results)',
+        content: {
+          'application/json': {
+            schema: ExecuteBatchAbilityResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Invalid input (missing required fields or invalid delegators array)',
+      },
+      500: {
+        description: 'Server error (ability not supported, app not found, etc.)',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
       },
       default: {
         description: 'Unexpected error',

@@ -12,5 +12,15 @@
     "outDir": "./dist",
     "resolveJsonModule": true
   },
-  "references": []
+  "references": [
+    {
+      "path": "../../libs/app-sdk"
+    },
+    {
+      "path": "../../libs/contracts-sdk"
+    },
+    {
+      "path": "../../libs/registry-sdk"
+    }
+  ]
 }

@@ -7,9 +7,11 @@ const appInstallationSignedDataSchema = z
       description: 'The signature of the EIP2771 typed data',
       example: '0x...',
     }),
-    dataToSign: z.object({}).passthrough().openapi({
-      description: 'The original EIP2771 typed data that was signed',
-    }),
+    dataToSign: z
+      .record(z.union([z.string(), z.number(), z.boolean(), z.object({}).passthrough()]))
+      .openapi({
+        description: 'The original EIP2771 typed data that was signed',
+      }),
   })
   .strict();
 
@@ -19,9 +21,11 @@ const agentSmartAccountDeploymentSignedDataSchema = z
       description: 'The signature of the UserOperation message hash',
       example: '0x...',
     }),
-    userOperation: z.object({}).passthrough().openapi({
-      description: 'The UserOperation that was signed for smart account deployment',
-    }),
+    userOperation: z
+      .record(z.union([z.string(), z.number(), z.boolean(), z.object({}).passthrough()]))
+      .openapi({
+        description: 'The UserOperation that was signed for smart account deployment',
+      }),
   })
   .strict();
 
@@ -43,10 +47,6 @@ export const completeInstallationRequest = z
         description: 'EOA address that controls the user smart wallet',
         example: EXAMPLE_WALLET_ADDRESS,
       }),
-    appId: z.number().openapi({
-      description: 'The Vincent app ID',
-      example: 1,
-    }),
     agentSignerAddress: z
       .string()
       .regex(/^0x[a-fA-F0-9]{40}$/)
