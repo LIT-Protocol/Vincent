@@ -1,4 +1,5 @@
-import type { Chain, PublicClient, PrivateKeyAccount } from 'viem';
+import type { Chain, PublicClient } from 'viem';
+import type { PrivateKeyAccount } from 'viem/accounts';
 
 import { Wallet, providers } from 'ethers';
 import {
@@ -114,12 +115,12 @@ export async function setupWallets({
   const vincentRegistryPublicClient = createPublicClient({
     chain: vincentRegistryChain,
     transport: http(vincentRegistryRpcUrl),
-  });
+  }) as PublicClient;
 
   const chronicleYellowstonePublicClient = createPublicClient({
     chain: chronicleYellowstone,
     transport: http('https://yellowstone-rpc.litprotocol.com/'),
-  });
+  }) as PublicClient;
   const chronicleYellowstoneFunderWalletClient = createWalletClient({
     account: funderAccount,
     chain: chronicleYellowstone,
