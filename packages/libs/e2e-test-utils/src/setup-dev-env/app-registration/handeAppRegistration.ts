@@ -1,9 +1,13 @@
 import { Wallet, providers } from 'ethers';
+
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
-import { type NewAppRegistration, registerNewApp } from './registerNewApp';
-import { type NewAppVersionRegistration, registerNewAppVersion } from './registerNewAppVersion';
 import type { AppMetadata } from '../setupVincentDevEnv';
+import type { NewAppRegistration } from './registerNewApp';
+import type { NewAppVersionRegistration } from './registerNewAppVersion';
+
+import { registerNewApp } from './registerNewApp';
+import { registerNewAppVersion } from './registerNewAppVersion';
 
 export async function handleAppRegistration({
   vincentApiUrl,

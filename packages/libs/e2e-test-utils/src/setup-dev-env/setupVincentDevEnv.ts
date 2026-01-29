@@ -1,9 +1,11 @@
-import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 import type { Wallet } from 'ethers';
+import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 
-import { setupWallets } from './wallets/setupWallets';
-import { setupVincentApp } from './setupVincentApp';
+import { parseEther } from 'viem';
+
 import { setupAgentSmartAccount } from './setupAgentSmartAccount';
+import { setupVincentApp } from './setupVincentApp';
+import { setupWallets } from './wallets/setupWallets';
 
 export interface VincentDevEnvironment {
   vincentRegistryRpcUrl: string;

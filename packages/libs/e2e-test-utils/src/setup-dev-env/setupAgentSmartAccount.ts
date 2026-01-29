@@ -1,8 +1,15 @@
 import type { Address, Chain } from 'viem';
-import { createPublicClient, http } from 'viem';
 
-import { installApp } from './vincent-registry-api/installApp';
+import { createPublicClient, createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+
+import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
+
+import { installAppUsingUserEoa } from './blockchain/installAppUsingUserEoa';
+import { createPermissionApproval } from './smart-account/createPermissionApproval';
+import { deploySmartAccount } from './smart-account/deploySmartAccount';
 import { completeAppInstallation } from './vincent-registry-api/completeAppInstallation';
+import { installApp, isInstallAppResponseSponsored } from './vincent-registry-api/installApp';
 
 export interface AgentSmartAccountInfo {
   agentSignerAddress: Address;
