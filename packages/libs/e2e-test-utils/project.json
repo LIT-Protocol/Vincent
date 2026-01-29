@@ -6,6 +6,9 @@
   "tags": [],
   "targets": {
     "clean": {},
+    "test": {
+      "command": "echo 'Test target disabled for this project - only \"test:e2e\"'"
+    },
     "build": {
       "executor": "@nx/js:tsc",
       "dependsOn": ["action:build", "contracts-sdk:build", "app-sdk:build"],
@@ -22,8 +25,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/libs/e2e-test-utils/jest.config.js",
-        "passWithNoTests": true
+        "jestConfig": "packages/libs/e2e-test-utils/jest.config.js"
       }
     }
   }
