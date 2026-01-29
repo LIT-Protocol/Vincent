@@ -1,12 +1,3 @@
-import type {
-  Chain,
-  PublicClient,
-  PrivateKeyAccount,
-  Chain,
-  PublicClient,
-  PrivateKeyAccount,
-} from 'viem';
-
 import { Wallet, providers } from 'ethers';
 import {
   createPublicClient,
