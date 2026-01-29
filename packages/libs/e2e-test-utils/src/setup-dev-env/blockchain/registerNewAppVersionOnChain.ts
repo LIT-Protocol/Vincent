@@ -1,5 +1,6 @@
-import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 import { providers, Wallet } from 'ethers';
+
+import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
 export async function registerNewAppVersionOnChain({
   vincentRegistryRpcUrl,

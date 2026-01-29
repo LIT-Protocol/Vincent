@@ -1,5 +1,7 @@
-import { type PublicClient, type WalletClient, type Account, formatEther } from 'viem';
-import { type Address } from 'viem/accounts';
+import type { PublicClient, WalletClient, Account } from 'viem';
+import type { Address } from 'viem/accounts';
+
+import { formatEther } from 'viem';
 
 export async function ensureWalletHasTokens({
   address,
