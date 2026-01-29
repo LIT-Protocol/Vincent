@@ -10,6 +10,9 @@
       "url": "https://api.heyvincent.ai"
     },
     {
+      "url": "https://staging.api.heyvincent.ai"
+    },
+    {
       "url": "http://localhost:3000/"
     }
   ],
