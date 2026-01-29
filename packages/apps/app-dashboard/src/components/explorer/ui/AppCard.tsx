@@ -49,13 +49,13 @@ export const AppCard = ({ app }: AppCardProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {app.appUserUrl && (
+          {app.appUrl && (
             <Button
               variant="ghost"
               size="sm"
               onClick={(e: React.FormEvent) => {
                 e.stopPropagation();
-                window.open(app.appUserUrl, '_blank');
+                window.open(app.appUrl, '_blank');
               }}
               className="shrink-0 text-black/60 hover:text-black hover:bg-black/5 transition-all duration-300 opacity-0 group-hover/card:opacity-100"
             >

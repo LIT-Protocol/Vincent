@@ -1,6 +1,6 @@
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/shared/ui/button';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 
 interface RefreshAbilityVersionPoliciesFormProps {
   onSubmit: () => Promise<void>;

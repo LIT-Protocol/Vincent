@@ -3,7 +3,7 @@ import { toggleTheme } from '@/lib/theme';
 import { useCallback, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface ExplorerNavProps {
   onNavigate?: (path: string) => void;
@@ -31,7 +31,6 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
 
   const isExplorer = location.pathname.startsWith('/explorer');
   const isDeveloper = location.pathname.startsWith('/developer');
-  const isUser = location.pathname.startsWith('/user');
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 pointer-events-auto">
@@ -61,16 +60,6 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-1 pt-2.5">
-              <button
-                onClick={() => handleNavigation('/user/apps')}
-                className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
-                style={{
-                  ...fonts.heading,
-                  color: isUser ? theme.brandOrange : undefined,
-                }}
-              >
-                User
-              </button>
               <button
                 onClick={() => handleNavigation('/developer/dashboard')}
                 className="px-3 py-1.5 rounded-lg text-sm transition-colors no-underline hover:bg-gray-100 dark:hover:bg-gray-800 leading-none"
@@ -190,16 +179,6 @@ export function ExplorerNav({ onNavigate, sidebarTrigger }: ExplorerNavProps) {
                 >
                   Navigate
                 </h3>
-                <button
-                  onClick={() => handleNavigation('/user/apps')}
-                  className="px-3 py-2 rounded-lg text-sm transition-colors text-left hover:bg-gray-100 dark:hover:bg-gray-800"
-                  style={{
-                    ...fonts.heading,
-                    color: isUser ? theme.brandOrange : undefined,
-                  }}
-                >
-                  User
-                </button>
                 <button
                   onClick={() => handleNavigation('/developer/dashboard')}
                   className="px-3 py-2 rounded-lg text-sm transition-colors text-left hover:bg-gray-100 dark:hover:bg-gray-800"

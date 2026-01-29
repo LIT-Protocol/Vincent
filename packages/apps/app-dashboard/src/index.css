@@ -9,7 +9,7 @@
     font-weight: 400;
 
     color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
+    color: #111827;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -186,6 +186,34 @@ button:hover {
     }
     body {
         @apply bg-background text-foreground;
+    }
+
+    /* Force input text color to prevent spellcheck/browser styling issues */
+    input, textarea {
+        color: #111827 !important;
+        -webkit-text-fill-color: #111827 !important;
+    }
+    .dark input, .dark textarea {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Force spelling/grammar error text to remain visible */
+    ::spelling-error {
+        color: #111827;
+        -webkit-text-fill-color: #111827;
+    }
+    ::grammar-error {
+        color: #111827;
+        -webkit-text-fill-color: #111827;
+    }
+    .dark ::spelling-error {
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
+    }
+    .dark ::grammar-error {
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
     }
 
     /* Fix autofill colors for inputs */

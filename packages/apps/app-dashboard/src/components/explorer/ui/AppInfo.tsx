@@ -1,7 +1,7 @@
 import { Mail, Copy, CheckCircle, ChevronDown, ChevronUp, Hash, Zap, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { App } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 export function AppInfo({ app }: { app: App }) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export function AppInfo({ app }: { app: App }) {
             </div>
           )}
 
-          {app.appUserUrl && (
+          {app.appUrl && (
             <div
               className={`p-4 rounded-xl ${theme.itemBg} border ${theme.cardBorder} ${theme.itemHoverBg} transition-all duration-300`}
             >
@@ -73,20 +73,20 @@ export function AppInfo({ app }: { app: App }) {
                     App URL
                   </p>
                   <a
-                    href={app.appUserUrl}
+                    href={app.appUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm underline break-all transition-colors duration-300 hover:opacity-80"
                     style={{ ...fonts.body, color: theme.brandOrange }}
                   >
-                    {app.appUserUrl}
+                    {app.appUrl}
                   </a>
                 </div>
               </div>
             </div>
           )}
 
-          {!app.contactEmail && !app.appUserUrl && (
+          {!app.contactEmail && !app.appUrl && (
             <div
               className={`p-8 rounded-xl ${theme.itemBg} border ${theme.cardBorder} text-center`}
             >

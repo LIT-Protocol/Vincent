@@ -29,11 +29,14 @@ export const env = createEnv({
     VITE_WALLETCONNECT_PROJECT_ID: z.string(),
     VITE_LIT_PAYER_SECRET_KEY: z.string(),
     VITE_LIT_RELAY_API_KEY: z.string(),
-    VITE_VINCENT_YELLOWSTONE_RPC: z.string().url(),
+    VITE_VINCENT_BASE_SEPOLIA_RPC: z.string().url(),
     VITE_JWT_EXPIRATION_MINUTES: z.coerce.number(),
     VITE_GAS_BUFFER_DIVISOR: z.coerce.number(),
     VITE_DOMAIN: z.string().optional(),
-    VITE_ENV: z.enum(['development', 'staging', 'production']).default('staging').optional(),
+    VITE_ENV: z
+      .enum(['development', 'staging', 'production', 'alpha'])
+      .default('staging')
+      .optional(),
     VITE_VINCENT_YIELD_APPID: z.coerce.number(),
     VITE_LIT_TOTAL_MANAGED: z.coerce.number().default(340),
     VITE_TOTAL_APPS: z.coerce.number(),

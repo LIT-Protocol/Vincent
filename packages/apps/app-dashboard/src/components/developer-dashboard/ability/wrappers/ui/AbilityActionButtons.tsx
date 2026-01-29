@@ -1,5 +1,5 @@
 import { Edit, Trash2, Plus, List, ArrowLeftRight } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { ActionButton } from '@/components/developer-dashboard/ui/ActionButton';
 
 interface AbilityActionButtonsProps {

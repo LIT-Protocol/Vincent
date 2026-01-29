@@ -7,7 +7,7 @@ import { ScrollIndicator } from '@/components/shared/ui/ScrollIndicator';
 import { StatCard } from '@/components/shared/ui/StatCard';
 import { Footer } from '@/components/shared/Footer';
 import LandingPartners from '@/components/shared/LandingPartners';
-import { fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts } from '@/lib/themeClasses';
 import { env } from '@/config/env';
 import { logos } from '@/components/shared/ExternalLogos';
 import { useTheme } from '@/hooks/useTheme';

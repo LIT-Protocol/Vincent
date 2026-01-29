@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 import { AnimatedCounter } from '@/components/shared/ui/AnimatedCounter';
-import { fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts } from '@/lib/themeClasses';
 
 interface StatCardProps {
   label: string;

@@ -1,4 +1,4 @@
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 export function Footer() {
   return (

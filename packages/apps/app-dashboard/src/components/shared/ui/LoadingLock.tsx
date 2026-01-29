@@ -1,4 +1,4 @@
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
+import { theme } from '@/lib/themeClasses';
 import { useRef, useEffect, useState } from 'react';
 
 interface LoadingLockProps {

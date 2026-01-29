@@ -15,14 +15,7 @@ export function AppInfoWrapper() {
     isError,
   } = vincentApiClient.useGetAppQuery({ appId: Number(appId) });
 
-  // Fetch app versions
-  const {
-    data: versions,
-    isLoading: versionsLoading,
-    isError: versionsError,
-  } = vincentApiClient.useGetAppVersionsQuery({ appId: Number(appId) });
-
-  // Fetch version abilities
+  // Fetch version abilities for the active version
   const {
     data: versionAbilities,
     isLoading: versionAbilitysLoading,
@@ -37,7 +30,7 @@ export function AppInfoWrapper() {
     },
   );
 
-  if (isLoading || versionsLoading || versionAbilitysLoading) {
+  if (isLoading || versionAbilitysLoading) {
     console.log('[AppInfoWrapper] Rendering loading state');
     return (
       <div className="w-full relative">
@@ -62,16 +55,6 @@ export function AppInfoWrapper() {
     );
   }
 
-  // Handle versions loading error
-  if (versionsError) {
-    return (
-      <ExplorerErrorPage
-        title="Failed to Load App Versions"
-        message="We couldn't load the version history for this application."
-      />
-    );
-  }
-
   // Handle version abilities loading error
   if (versionAbilitysError) {
     return (
@@ -92,15 +75,6 @@ export function AppInfoWrapper() {
     );
   }
 
-  if (!versions) {
-    return (
-      <ExplorerErrorPage
-        title="No Versions Available"
-        message="This application has no version information available."
-      />
-    );
-  }
-
   if (!versionAbilities) {
     return (
       <ExplorerErrorPage
@@ -110,5 +84,5 @@ export function AppInfoWrapper() {
     );
   }
 
-  return <AppInfoView app={app} versions={versions} versionAbilities={versionAbilities} />;
+  return <AppInfoView app={app} versionAbilities={versionAbilities} />;
 }

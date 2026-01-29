@@ -5,8 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/shared/ui/form';
 import { Button } from '@/components/shared/ui/button';
 import { TextField } from '../../form-fields';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
+import { theme } from '@/lib/themeClasses';
 
 function buildConfirmationString(appName: string): string {
   return `I want to delete app ${appName}`;
@@ -101,6 +102,29 @@ export function DeleteAppForm({ appName, onSubmit, isSubmitting = false }: Delet
             </span>
           </div>
         )}
+
+        {/* Gas Warning */}
+        <div
+          className="flex gap-3 p-4 rounded-lg border"
+          style={{
+            backgroundColor: `${theme.brandOrange}10`,
+            borderColor: `${theme.brandOrange}40`,
+          }}
+        >
+          <AlertTriangle
+            className="h-5 w-5 flex-shrink-0 mt-0.5"
+            style={{ color: theme.brandOrange }}
+          />
+          <div className="space-y-1">
+            <p className={`text-sm font-medium ${theme.text}`}>
+              This action requires a blockchain transaction
+            </p>
+            <p className={`text-sm ${theme.textMuted}`}>
+              Deleting this app will cost gas fees. This action can be undone, but undeleting will
+              also require gas. Please consider carefully before proceeding.
+            </p>
+          </div>
+        </div>
 
         <Button
           type="submit"

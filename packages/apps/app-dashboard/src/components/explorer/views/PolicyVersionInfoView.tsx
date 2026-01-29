@@ -1,7 +1,7 @@
 import { Policy } from '@/types/developer-dashboard/appTypes';
 import { Shield } from 'lucide-react';
 import { Logo } from '@/components/shared/ui/Logo';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface PolicyVersionInfoViewProps {
   policy: Policy;

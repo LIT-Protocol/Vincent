@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import DitheredGlobe from '@/components/shared/DitheredGlobe';
-import { GlobeOffsetProvider, useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+import { GlobeOffsetProvider, useGlobeOffset } from '@/layout/shared/GlobeOffsetContext';
 
 /**
  * Persistent layout that keeps the DitheredGlobe mounted across route changes.

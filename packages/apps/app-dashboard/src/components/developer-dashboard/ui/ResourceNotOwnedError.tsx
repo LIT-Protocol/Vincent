@@ -1,6 +1,6 @@
 import { ShieldAlert, Home, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 type ResourceNotOwnedErrorProps = {
   resourceType: 'app' | 'ability' | 'policy';

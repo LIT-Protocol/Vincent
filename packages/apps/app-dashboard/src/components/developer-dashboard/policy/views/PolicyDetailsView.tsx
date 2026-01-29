@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Policy, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { Badge } from '@/components/shared/ui/badge';
 import { Logo } from '@/components/shared/ui/Logo';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { motion } from 'framer-motion';
 import { AppDetail } from '@/components/developer-dashboard/ui/AppDetail';
 import { PolicyActionButtons } from '../wrappers/ui/PolicyActionButtons';

@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { reactClient as vincentApiClient } from '@lit-protocol/vincent-registry-sdk';
 import { Policy } from '@/types/developer-dashboard/appTypes';
 
 export function useUserPolicies() {
-  const { authInfo } = useReadAuthInfo();
-  const address = authInfo?.userPKP?.ethAddress;
+  const { authAddress: address } = useAuth();
 
   const {
     data: allPolicies,
