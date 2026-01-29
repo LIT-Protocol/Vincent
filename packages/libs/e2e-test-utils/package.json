@@ -4,30 +4,17 @@
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {
-    "test:smartAccount": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/all.spec.ts",
-    "test:crossmint": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/crossmint.spec.ts",
-    "test:zerodev": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/zerodev.spec.ts",
-    "test:safe": "NODE_OPTIONS=--experimental-vm-modules dotenv -e .env jest test/smartAccount/safe.spec.ts"
-  },
   "dependencies": {
-    "@lit-protocol/auth-helpers": "^7",
-    "@lit-protocol/constants": "^7",
-    "@crossmint/wallets-sdk": "^0.18.7",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/contracts-sdk": "^7.2.3",
-    "@lit-protocol/lit-node-client": "^7",
     "@lit-protocol/pkp-ethers": "^7.3.1",
-    "@lit-protocol/types": "^7",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
-    "@t3-oss/env-core": "^0.13.8",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/permissions": "^5.6.2",
     "@zerodev/sdk": "^5.5.3",
     "ethers": "^5.7.2",
-    "permissionless": "^0.2.57",
     "tslib": "^2.8.1",
-    "viem": "^2.38.3",
-    "zod": "^3.25.64"
+    "viem": "^2.38.3"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -42,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@types/semver": "^7.7.0",
     "chokidar-cli": "^3.0.0",
     "dotenv-cli": "^7.4.2",

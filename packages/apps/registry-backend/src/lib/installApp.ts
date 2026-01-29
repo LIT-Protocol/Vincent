@@ -346,20 +346,74 @@ export async function installApp(request: {
     appId,
   );
 
-  // 3. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
+  // 3. Check if user already has a permitted app for this appId
+  // If so, return existing PKP and smart account instead of minting a new PKP
   const contractClient = getContractClient();
+  const agentAddresses = await contractClient.getAllRegisteredAgentAddressesForUser({
+    userAddress: userControllerAddress,
+    offset: '0',
+  });
+
+  if (agentAddresses.length > 0) {
+    const permittedApps = await contractClient.getPermittedAppForAgents({
+      agentAddresses,
+    });
+
+    const existingAgent = permittedApps.find(
+      (agent) => agent.permittedApp && agent.permittedApp.appId === appId,
+    );
+
+    if (existingAgent && existingAgent.permittedApp) {
+      // 3.1 Check if the permitted version is the same as the active version
+      if (existingAgent.permittedApp.version === app.activeVersion) {
+        console.log('[installApp] Agent already has this app permitted, returning existing data');
+        console.table({
+          'Agent Address': existingAgent.agentAddress,
+          'PKP Signer Address': existingAgent.permittedApp.pkpSigner,
+          'Permitted Version': existingAgent.permittedApp.version,
+          'Active Version': app.activeVersion,
+        });
+        return {
+          agentSignerAddress: existingAgent.permittedApp.pkpSigner,
+          agentSmartAccountAddress: existingAgent.agentAddress,
+          alreadyInstalled: true,
+        };
+      }
+
+      console.log(
+        `[installApp] Agent has already permitted this app, but the permitted version is different from the active version. Minting new PKP and permitting new version`,
+      );
+      console.table({
+        'Agent Address': existingAgent.agentAddress,
+        'Permitted Version': existingAgent.permittedApp.version,
+        'Active Version': app.activeVersion,
+      });
+      // Fall through to fresh install flow below which will mint a new PKP
+    }
+  }
+
+  // 4. Check if user has a previously uninstalled app (needs reinstall instead of fresh install)
   const unpermittedApps = await contractClient.getUnpermittedAppForAgents({
     agentAddresses: [agentSmartAccountAddress],
   });
   const unpermittedApp = unpermittedApps[0]?.unpermittedApp;
 
   if (unpermittedApp) {
+    console.log(
+      '[installApp] Agent has an unpermitted this app, repermitting it with existing PKP',
+    );
+    console.table({
+      'Agent Address': agentSmartAccountAddress,
+      'Unpermitted App': unpermittedApp.appId,
+      'Previous Permitted Version': unpermittedApp.previousPermittedVersion,
+      'Active Version': app.activeVersion,
+    });
     const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
       agentSmartAccountAddress,
       appId,
     ]);
 
-    // 3.5 If sponsorGas is false, return raw transaction for direct EOA submission
+    // 4.5 If sponsorGas is false, return raw transaction for direct EOA submission
     if (!sponsorGas) {
       return {
         agentSignerAddress: unpermittedApp.pkpSigner,
@@ -390,7 +444,7 @@ export async function installApp(request: {
     };
   }
 
-  // 4. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
+  // 5. Fresh install flow - Fetch abilities for this app version directly from on-chain contract
   const appVersionResult = await contractClient.getAppVersion({
     appId,
     version: app.activeVersion,
