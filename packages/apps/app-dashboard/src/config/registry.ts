@@ -5,7 +5,10 @@ const { VITE_ENV } = env;
 const REGISTRY_CONFIG = {
   development: { url: 'http://localhost:3000', domain: 'localhost:3000' },
   staging: { url: 'https://staging.api.heyvincent.ai', domain: 'staging.api.heyvincent.ai' },
-  production: { url: 'https://api.heyvincent.ai', domain: 'api.heyvincent.ai' },
+  production: {
+    url: 'https://vincent-dashboard-20.vercel.app',
+    domain: 'vincent-dashboard-20.vercel.app',
+  },
 } as const;
 
 const config = REGISTRY_CONFIG[VITE_ENV as keyof typeof REGISTRY_CONFIG] || REGISTRY_CONFIG.staging;
