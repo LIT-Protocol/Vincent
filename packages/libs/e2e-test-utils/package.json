@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-e2e-test-utils",
-  "version": "4.0.0",
+  "version": "4.0.1-alpha.0",
   "publishConfig": {
     "access": "public"
   },
