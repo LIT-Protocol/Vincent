@@ -6,7 +6,7 @@ import { withSession } from '../../mongo/withSession';
 import { importPackage } from '../../packageImporter';
 import { requirePackage, withValidPackage } from '../package/requirePackage';
 import { requireUserIsAuthor } from '../package/requireUserIsAuthor';
-import { getPKPInfo, requireVincentAuth, withVincentAuth } from '../vincentAuth';
+import { requireVincentAuth, withVincentAuth } from '../vincentAuth';
 import { requirePolicy, withPolicy } from './requirePolicy';
 import { requirePolicyVersion, withPolicyVersion } from './requirePolicyVersion';
 
@@ -50,7 +50,7 @@ export function registerRoutes(app: Express) {
           const policy = new Policy({
             title,
             packageName: packageInfo.name,
-            authorWalletAddress: getPKPInfo(req.vincentUser.decodedJWT).ethAddress,
+            authorWalletAddress: req.vincentUser.address,
             description,
             logo,
             activeVersion,

@@ -55,45 +55,15 @@ const injectedRtkApi = api
         }),
         providesTags: ['AppVersion'],
       }),
-      createAppVersion: build.mutation<CreateAppVersionApiResponse, CreateAppVersionApiArg>({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version`,
-          method: 'POST',
-          body: queryArg.appVersionCreate,
-        }),
-        invalidatesTags: ['AppVersion'],
-      }),
       getAppVersion: build.query<GetAppVersionApiResponse, GetAppVersionApiArg>({
         query: (queryArg) => ({
           url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
         }),
         providesTags: ['AppVersion'],
       }),
-      editAppVersion: build.mutation<EditAppVersionApiResponse, EditAppVersionApiArg>({
+      createAppVersion: build.mutation<CreateAppVersionApiResponse, CreateAppVersionApiArg>({
         query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
-          method: 'PUT',
-          body: queryArg.appVersionEdit,
-        }),
-        invalidatesTags: ['AppVersion'],
-      }),
-      deleteAppVersion: build.mutation<DeleteAppVersionApiResponse, DeleteAppVersionApiArg>({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['AppVersion'],
-      }),
-      enableAppVersion: build.mutation<EnableAppVersionApiResponse, EnableAppVersionApiArg>({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/enable`,
-          method: 'POST',
-        }),
-        invalidatesTags: ['AppVersion'],
-      }),
-      disableAppVersion: build.mutation<DisableAppVersionApiResponse, DisableAppVersionApiArg>({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/disable`,
+          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version`,
           method: 'POST',
         }),
         invalidatesTags: ['AppVersion'],
@@ -138,13 +108,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['AppVersionAbility'],
-      }),
-      undeleteAppVersion: build.mutation<UndeleteAppVersionApiResponse, UndeleteAppVersionApiArg>({
-        query: (queryArg) => ({
-          url: `/app/${encodeURIComponent(String(queryArg.appId))}/version/${encodeURIComponent(String(queryArg.version))}/undelete`,
-          method: 'POST',
-        }),
-        invalidatesTags: ['AppVersion'],
       }),
       undeleteAppVersionAbility: build.mutation<
         UndeleteAppVersionAbilityApiResponse,
@@ -477,13 +440,6 @@ export type GetAppVersionsApiArg = {
   /** ID of the target application */
   appId: number;
 };
-export type CreateAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
-export type CreateAppVersionApiArg = {
-  /** ID of the target application */
-  appId: number;
-  /** Developer-defined version details */
-  appVersionCreate: AppVersionCreate;
-};
 export type GetAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
 export type GetAppVersionApiArg = {
   /** ID of the target application */
@@ -491,36 +447,10 @@ export type GetAppVersionApiArg = {
   /** Version # of the target application version */
   version: number;
 };
-export type EditAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
-export type EditAppVersionApiArg = {
+export type CreateAppVersionApiResponse = /** status 201 Successful operation */ AppVersionRead;
+export type CreateAppVersionApiArg = {
   /** ID of the target application */
   appId: number;
-  /** Version # of the target application version */
-  version: number;
-  /** Update version changes field */
-  appVersionEdit: AppVersionEdit;
-};
-export type DeleteAppVersionApiResponse =
-  /** status 200 OK - Resource successfully deleted */ GenericResultMessage;
-export type DeleteAppVersionApiArg = {
-  /** ID of the target application */
-  appId: number;
-  /** Version # of the target application version */
-  version: number;
-};
-export type EnableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
-export type EnableAppVersionApiArg = {
-  /** ID of the target application */
-  appId: number;
-  /** Version # of the target application version */
-  version: number;
-};
-export type DisableAppVersionApiResponse = /** status 200 Successful operation */ AppVersionRead;
-export type DisableAppVersionApiArg = {
-  /** ID of the target application */
-  appId: number;
-  /** Version # of the target application version */
-  version: number;
 };
 export type ListAppVersionAbilitiesApiResponse =
   /** status 200 Successful operation */ AppVersionAbilityListRead;
@@ -563,14 +493,6 @@ export type DeleteAppVersionAbilityApiArg = {
   appVersion: number;
   /** The NPM package name */
   abilityPackageName: string;
-};
-export type UndeleteAppVersionApiResponse =
-  /** status 200 OK - Resource successfully undeleted */ GenericResultMessage;
-export type UndeleteAppVersionApiArg = {
-  /** ID of the target application */
-  appId: number;
-  /** Version # of the target application version */
-  version: number;
 };
 export type UndeleteAppVersionAbilityApiResponse =
   /** status 200 OK - Resource successfully undeleted */ GenericResultMessage;
@@ -924,8 +846,6 @@ export type AppVersion = {
   updatedAt: string;
   /** Timestamp when this was created */
   createdAt: string;
-  /** Describes what changed between this version and the previous version. */
-  changes?: string;
   /** Whether or not this AppVersion is deleted */
   isDeleted?: boolean;
 };
@@ -940,21 +860,11 @@ export type AppVersionRead = {
   appId: number;
   /** App Version number */
   version: number;
-  /** Describes what changed between this version and the previous version. */
-  changes?: string;
   /** Whether or not this AppVersion is deleted */
   isDeleted?: boolean;
 };
 export type AppVersionList = AppVersion[];
 export type AppVersionListRead = AppVersionRead[];
-export type AppVersionCreate = {
-  /** Describes what changed between this version and the previous version. */
-  changes?: string;
-};
-export type AppVersionEdit = {
-  /** Describes what changed between this version and the previous version. */
-  changes?: string;
-};
 export type AppVersionAbility = {
   /** Timestamp when this was last modified */
   updatedAt: string;

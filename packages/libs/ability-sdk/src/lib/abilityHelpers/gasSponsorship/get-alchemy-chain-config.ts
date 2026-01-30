@@ -39,8 +39,8 @@ import {
   riseTestnet,
   storyMainnet,
   storyAeneid,
-  celoSepolia,
-  celoMainnet,
+  // celoSepolia, // Not available in current @account-kit/infra version
+  // celoMainnet, // Commented out alongside celoSepolia
   teaSepolia,
   bobaSepolia,
   bobaMainnet,
@@ -95,8 +95,8 @@ export function getAlchemyChainConfig(chainId: number): typeof mainnet {
     riseTestnet,
     storyMainnet,
     storyAeneid,
-    celoSepolia,
-    celoMainnet,
+    // celoSepolia,
+    // celoMainnet,
     teaSepolia,
     bobaSepolia,
     bobaMainnet,

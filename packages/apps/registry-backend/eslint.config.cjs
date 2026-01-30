@@ -21,6 +21,10 @@ module.exports = [
             'debug',
             // cors is used in src/lib/express/index.ts but NX doesn't detect it in the build target
             'cors',
+            // Used in packageImporter.ts and getAgentAccount.ts - nx doesn't trace these imports properly
+            '@zerodev/sdk',
+            'fs-extra',
+            'tar',
           ],
         },
       ],
