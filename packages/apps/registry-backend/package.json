@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/registry-backend",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/copy-api-html.js",
@@ -24,7 +24,7 @@
     "@lit-protocol/constants": "^9.0.0",
     "@lit-protocol/contracts": "^0.0.90",
     "@lit-protocol/flags": "^2.1.0",
-    "@lit-protocol/vincent-ability-relay-link": "2.0.0-alpha",
+    "@lit-protocol/vincent-ability-relay-link": "workspace:*",
     "@lit-protocol/vincent-app-sdk": "workspace:*",
     "@lit-protocol/vincent-contracts-sdk": "workspace:*",
     "@lit-protocol/vincent-registry-sdk": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/vincent-ability-uniswap-swap",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "publishConfig": {
     "access": "public"
   },

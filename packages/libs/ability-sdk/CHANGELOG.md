@@ -1,3 +1,22 @@
+## 3.0.2 (2026-01-30)
+
+### 🩹 Fixes
+
+- **registry-backend** ([34324cbb](https://github.com/LIT-Protocol/Vincent/commit/34324cbb))
+  - Refactored SIWE authentication middleware
+  - Simplified app routes and cleaned up route handlers
+  - Updated ability and policy route handlers
+    **registry-sdk**
+  - Switched authentication from JWT to SIWE across all endpoints
+  - Removed app version management endpoints (editAppVersion, enableAppVersion, disableAppVersion, deleteAppVersion, undeleteAppVersion)
+  - Removed appVersionCreate and appVersionEdit schemas
+    **ability-sdk**
+  - Updated Alchemy chain config for gas sponsorship
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 ## 3.0.1 (2026-01-17)
 
 ### 🧱 Updated Dependencies
