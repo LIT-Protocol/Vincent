@@ -26,4 +26,5 @@
 /packages/libs/mcp-sdk
 /packages/libs/tool-sdk
 /packages/libs/wrapped-keys
+/packages/libs/app-sdk
 /docs
