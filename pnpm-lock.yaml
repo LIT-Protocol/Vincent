@@ -1158,17 +1158,17 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@lit-protocol/vincent-ability-relay-link':
-        specifier: 2.0.0-alpha
-        version: 2.0.0-alpha(@lit-protocol/vincent-app-sdk@2.7.0-alpha(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+        specifier: 2.0.0
+        version: 2.0.0(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       '@lit-protocol/vincent-app-sdk':
-        specifier: 2.7.0-alpha
-        version: 2.7.0-alpha(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
+        specifier: 2.7.0
+        version: 2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-contracts-sdk':
-        specifier: ^8.1.0
+        specifier: 8.1.0
         version: 8.1.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@lit-protocol/vincent-registry-sdk':
-        specifier: 6.0.0-alpha.1
-        version: 6.0.0-alpha.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)
+        specifier: 6.0.0
+        version: 6.0.0(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)
       '@t3-oss/env-core':
         specifier: ^0.13.6
         version: 0.13.8(arktype@2.1.28)(typescript@5.8.3)(valibot@1.1.0(typescript@5.8.3))(zod@3.25.64)
@@ -3854,16 +3854,16 @@ packages:
   '@lit-protocol/uint8arrays@7.3.1':
     resolution: {integrity: sha512-Y591CUPt17GzlDeQmcjCgMS77gGatHebIgEAgk7oV0oH2I1w6MooHLy6zWwXIlXh/8O5ZY6G6gcdzgmjz6f+Ng==}
 
-  '@lit-protocol/vincent-ability-relay-link@2.0.0-alpha':
-    resolution: {integrity: sha512-bRUJbbW0oXrnEcByZ6rYgM82wNbYQj9bYaxdB9IaqEYQaDfTed9UBTsP7EURHyN5a2Z+Jjppag3xz9rYPsYxcQ==}
+  '@lit-protocol/vincent-ability-relay-link@2.0.0':
+    resolution: {integrity: sha512-Cq9+josnzVIq3wjW+ac8Qd2O1AYiS0V2DajCZxPpLCcNNV9Qx3Fujww4erJJkVkgoi1TvypGqgKs6ZIljnaYNw==}
     peerDependencies:
-      '@lit-protocol/vincent-app-sdk': ^2.7.0-alpha
+      '@lit-protocol/vincent-app-sdk': ^2.7.0
 
-  '@lit-protocol/vincent-ability-sdk@3.0.1':
-    resolution: {integrity: sha512-Fh1OCVZyb5WxHo0IRquaGh+zq8sdAn93vLwgU9FbZ1B7OMCl8VbLDWQ2Z92lTobiwQk/q0XOQBrLEUFst9PykQ==}
+  '@lit-protocol/vincent-ability-sdk@3.0.2':
+    resolution: {integrity: sha512-wA/Fo6HRYEVmmHFhRKnvD2ugyNacFryaUj67Zr0f4WH+R2TQMQdFrnkIJCXnfNjw9I26Fqr7T/Elqb2iUR66rg==}
 
-  '@lit-protocol/vincent-app-sdk@2.7.0-alpha':
-    resolution: {integrity: sha512-iQCjg6jzM+iQTLl3dx+J63l4IxpKE7tdCakg1ZewzT08P7M2qcjKKMhYhY27u5ZQVwZwAuIpoc4RU2Lml0arxw==}
+  '@lit-protocol/vincent-app-sdk@2.7.0':
+    resolution: {integrity: sha512-LcBod5QeJrGL/dRv3beM9R9f4YFBeDvxvzX3Y5W4O8uDhy+JExzyDFymdJtBP90+pWDutg6hIBpnd1H08kqz+A==}
     engines: {node: ^20.11.1, pnpm: 10.7.0}
     peerDependencies:
       react: ^19.0.0
@@ -3880,8 +3880,8 @@ packages:
   '@lit-protocol/vincent-registry-sdk@4.3.0':
     resolution: {integrity: sha512-sg/rq5jbSafNtM3cDNvvia/meNpAySmk8CybG/72IOoIaGHV8Kmg3cy6c1kqE0uulQDm8GRu3E1GUevhIrjEew==}
 
-  '@lit-protocol/vincent-registry-sdk@6.0.0-alpha.1':
-    resolution: {integrity: sha512-8BnlNrVqLh+hUWm6y6WvBr0dp47Eyax3w8e6BnmAv+gXGiXfOV+u/5Q2F2i2SxyOZ94HYimxUv74uJ4izeI2pQ==}
+  '@lit-protocol/vincent-registry-sdk@6.0.0':
+    resolution: {integrity: sha512-IzSs+sKPukMpAhGRPXMF2+cqaiDURfKKDfkKkDX/zwWEvSX9FcRIOzfX3JUaDFt5kuzVjpAA5jwNG5Xqj16a1Q==}
 
   '@lit-protocol/vincent-scaffold-sdk@1.1.8':
     resolution: {integrity: sha512-SCLsBEogqvdpT+ug2aBY+QQ0X9T882ZEIManRqUiM60IDtYl0UQtc9rXo+R2dq5UO9aSznPc6wPCvFGGWfxnxw==}
@@ -18343,11 +18343,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@lit-protocol/vincent-ability-relay-link@2.0.0-alpha(@lit-protocol/vincent-app-sdk@2.7.0-alpha(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)':
+  '@lit-protocol/vincent-ability-relay-link@2.0.0(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)':
     dependencies:
       '@crossmint/wallets-sdk': 0.18.9(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
-      '@lit-protocol/vincent-ability-sdk': 3.0.1(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-app-sdk': 2.7.0-alpha(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-ability-sdk': 3.0.2(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-app-sdk': 2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@relayprotocol/relay-sdk': 4.0.1(debug@4.4.3)(viem@2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@zerodev/permissions': 5.6.3(@zerodev/sdk@5.5.7(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(viem@2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@zerodev/sdk': 5.5.7(viem@2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -18387,7 +18387,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@lit-protocol/vincent-ability-sdk@3.0.1(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-ability-sdk@3.0.2(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@account-kit/infra': 4.81.3(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@account-kit/smart-contracts': 4.81.3(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.43.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
@@ -18426,12 +18426,12 @@ snapshots:
       - uploadthing
       - utf-8-validate
 
-  '@lit-protocol/vincent-app-sdk@2.7.0-alpha(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)':
+  '@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@lit-protocol/auth-helpers': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/constants': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/lit-node-client': 7.3.1(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-ability-sdk': 3.0.1(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@lit-protocol/vincent-ability-sdk': 3.0.2(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@lit-protocol/vincent-contracts-sdk': 8.1.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64))
       '@noble/secp256k1': 2.3.0
       ethers: 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -18589,7 +18589,7 @@ snapshots:
       - react
       - react-redux
 
-  '@lit-protocol/vincent-registry-sdk@6.0.0-alpha.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)':
+  '@lit-protocol/vincent-registry-sdk@6.0.0(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.3.4(zod@3.25.64)
       '@reduxjs/toolkit': 2.11.1(react-redux@9.2.0(@types/react@19.2.7)(react@19.2.1)(redux@5.0.1))(react@19.2.1)

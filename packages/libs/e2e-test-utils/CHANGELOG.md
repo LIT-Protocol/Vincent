@@ -1,3 +1,18 @@
+# 4.0.0 (2026-01-30)
+
+### ⚠️ Breaking Changes
+
+- Refactor permit app and complete installation flows to return typed data to be signed by the EOA to allow for smart account deployment and the PKP to be added as a validator withouth the client (EOA) having to interface with the Zerodev SDK directly ([a1ec88da](https://github.com/LIT-Protocol/Vincent/commit/a1ec88da))
+- Overhauls Vincent dev env to use Zerodev only smart account architecture ([d15c463b](https://github.com/LIT-Protocol/Vincent/commit/d15c463b))
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.7.0
+
+### ❤️ Thank You
+
+- Wyatt Barnes @Spacesai1or
+
 ## 3.0.1 (2026-01-17)
 
 ### 🧱 Updated Dependencies

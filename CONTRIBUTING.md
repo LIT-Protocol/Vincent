@@ -205,6 +205,7 @@ Currently, `packages/apps/registry-backend` specifies version numbers for the lo
 2. Update the following in `packages/apps/registry-backend/package.json`:
 
 ```json
+"@lit-protocol/vincent-ability-relay-link": "workspace:*",
 "@lit-protocol/vincent-app-sdk": "workspace:*",
 "@lit-protocol/vincent-contracts-sdk": "workspace:*",
 "@lit-protocol/vincent-registry-sdk": "workspace:*",
@@ -241,7 +242,6 @@ app-sdk \
 contracts-sdk \
 e2e-test-utils \
 mcp-sdk \
-registry-sdk \
 # wrapped-keys \
 --otp=YOUR_OTP
 ```

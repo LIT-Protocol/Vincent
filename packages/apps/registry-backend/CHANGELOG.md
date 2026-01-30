@@ -1,3 +1,35 @@
+# 3.0.0 (2026-01-30)
+
+### 🚀 Features
+
+- Add new execute ability endpoint ([8856e7b6](https://github.com/LIT-Protocol/Vincent/commit/8856e7b6))
+- Updates permit app endpoint to check if a user already has an agents that permitted the provided app version ([d15c463b](https://github.com/LIT-Protocol/Vincent/commit/d15c463b))
+
+### ⚠️ Breaking Changes
+
+- Refactor permit app and complete installation flows to return typed data to be signed by the EOA to allow for smart account deployment and the PKP to be added as a validator withouth the client (EOA) having to interface with the Zerodev SDK directly ([a1ec88da](https://github.com/LIT-Protocol/Vincent/commit/a1ec88da))
+- **registry-backend** ([34324cbb](https://github.com/LIT-Protocol/Vincent/commit/34324cbb))
+  - Refactored SIWE authentication middleware
+  - Simplified app routes and cleaned up route handlers
+  - Updated ability and policy route handlers
+    **registry-sdk**
+  - Switched authentication from JWT to SIWE across all endpoints
+  - Removed app version management endpoints (editAppVersion, enableAppVersion, disableAppVersion, deleteAppVersion, undeleteAppVersion)
+  - Removed appVersionCreate and appVersionEdit schemas
+    **ability-sdk**
+  - Updated Alchemy chain config for gas sponsorship
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.7.0
+- Updated registry-sdk to 6.0.0
+- Updated ability-relay-link to 2.0.0
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+- Wyatt Barnes @Spacesai1or
+
 ## 2.1.6 (2026-01-14)
 
 ### 🧱 Updated Dependencies

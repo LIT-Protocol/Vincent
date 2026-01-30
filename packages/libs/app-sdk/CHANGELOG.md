@@ -1,3 +1,9 @@
+## 2.7.0 (2026-01-30)
+
+### 🧱 Updated Dependencies
+
+- Updated ability-sdk to 3.0.2
+
 ## 2.6.1 (2026-01-17)
 
 ### 🧱 Updated Dependencies

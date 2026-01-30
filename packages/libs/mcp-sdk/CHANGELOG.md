@@ -1,3 +1,9 @@
+## 1.1.14 (2026-01-30)
+
+### 🧱 Updated Dependencies
+
+- Updated app-sdk to 2.7.0
+
 ## 1.1.13 (2026-01-17)
 
 ### 🧱 Updated Dependencies
