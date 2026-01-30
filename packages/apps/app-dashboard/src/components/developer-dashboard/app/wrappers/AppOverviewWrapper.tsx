@@ -11,6 +11,7 @@ import { EditAppForm } from '../forms/EditAppForm';
 import { DeleteAppForm } from '../forms/DeleteAppForm';
 import { ManageDelegateesForm } from '../forms/ManageDelegateesForm';
 import { SetActiveVersionForm } from '../forms/SetActiveVersionForm';
+import { CreateAppForm, CreateAppFormData, CreateAppWithIdFormData } from '../forms/CreateAppForm';
 import Loading from '@/components/shared/ui/Loading';
 import { StatusMessage } from '@/components/shared/ui/statusMessage';
 import { useBlockchainAppData } from '@/hooks/useBlockchainAppData';
@@ -64,6 +65,7 @@ export function AppOverviewWrapper() {
 
   // Mutations
   const [editApp] = vincentApiClient.useEditAppMutation();
+  const [createApp] = vincentApiClient.useCreateAppMutation();
 
   // Check for action query param when data is ready
   useEffect(() => {
@@ -111,8 +113,27 @@ export function AppOverviewWrapper() {
   }
 
   // App exists on-chain and user owns it, but not in registry yet
-  // This indicates an error occurred during the registration process
+  // Show recovery form to allow user to sync their app to the registry
   if (existsOnChain && isOwner && !app && !appLoading) {
+    const handleSyncToRegistry = async (data: CreateAppFormData | CreateAppWithIdFormData) => {
+      await createApp({
+        appCreate: {
+          appId: Number(appId),
+          name: data.name,
+          description: data.description,
+          contactEmail: data.contactEmail,
+          appUrl: data.appUrl,
+          logo: data.logo,
+          deploymentStatus: data.deploymentStatus,
+        },
+      }).unwrap();
+    };
+
+    const handleSyncSuccess = () => {
+      // Reload the page to show the app details
+      window.location.reload();
+    };
+
     return (
       <>
         <Breadcrumb
@@ -121,57 +142,40 @@ export function AppOverviewWrapper() {
             { label: `App ${appId}` },
           ]}
         />
-        <div className={`${theme.mainCard} border ${theme.mainCardBorder} rounded-xl p-6 sm:p-8`}>
-          <div className="max-w-2xl mx-auto text-center">
-            {/* Error Icon */}
-            <div className="mb-4 flex justify-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-500/20">
-                <svg
-                  className="w-6 h-6 text-red-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            {/* Title */}
-            <h2 className={`text-lg font-semibold mb-3 ${theme.text}`} style={fonts.heading}>
-              App Registration Error
-            </h2>
-
-            {/* Description */}
-            <p className={`${theme.textMuted} text-sm mb-6 leading-relaxed`} style={fonts.body}>
-              An error occurred during the app registration process for App ID {appId}. Your app
-              exists on-chain but was not properly synced to the Vincent Registry. Please contact
-              our team for assistance in resolving this issue.
-            </p>
-
-            {/* Contact Button */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className={`text-2xl font-semibold ${theme.text}`} style={fonts.heading}>
+              Complete App Registration
+            </h1>
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+              WIP
+            </span>
+          </div>
+          <p className={`${theme.textMuted} text-sm mb-3`} style={fonts.body}>
+            Your app (ID: {appId}) was registered on-chain but needs to be synced to the Vincent
+            Registry. Please fill in the app details below to complete the registration.
+          </p>
+          <p className={`text-sm text-yellow-600 dark:text-yellow-400`} style={fonts.body}>
+            <strong>Note:</strong> This will only sync app metadata. Version abilities cannot be
+            automatically synced for on-chain versions. Please{' '}
             <a
-              href="https://discord.gg/lit-protocol"
+              href="https://discord.com/invite/zBw5hDZve8"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-6 py-2.5 text-white rounded-lg font-semibold transition-all hover:scale-105"
-              style={{ backgroundColor: theme.brandOrange, ...fonts.heading }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = theme.brandOrangeDarker;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = theme.brandOrange;
-              }}
+              className="underline hover:no-underline font-medium"
+              style={{ color: theme.brandOrange }}
             >
-              Contact Support
-            </a>
-          </div>
+              contact our team
+            </a>{' '}
+            for assistance with syncing abilities.
+          </p>
         </div>
+        <CreateAppForm
+          existingAppId={Number(appId)}
+          onSubmit={handleSyncToRegistry}
+          onSuccess={handleSyncSuccess}
+          isSubmitting={isSubmitting}
+        />
       </>
     );
   }

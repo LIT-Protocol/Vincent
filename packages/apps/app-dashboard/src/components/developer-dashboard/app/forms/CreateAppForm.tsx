@@ -51,6 +51,10 @@ export type CreateAppWithIdFormData = z.infer<typeof CreateAppWithIdSchema>;
 interface CreateAppFormProps {
   onSubmit: (data: CreateAppFormData | CreateAppWithIdFormData) => Promise<void>;
   isSubmitting?: boolean;
+  /**
+   * When provided, the form is used for recovery: syncing an app that exists
+   * on-chain but failed to sync to the registry during initial registration.
+   */
   existingAppId?: number;
   onSuccess?: () => void;
 }
@@ -190,7 +194,9 @@ export function CreateAppForm({
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                   <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                   <span className="text-sm text-green-600 dark:text-green-400">
-                    App created successfully!
+                    {existingAppId
+                      ? 'App synced to registry successfully!'
+                      : 'App created successfully!'}
                   </span>
                 </div>
               )}
@@ -201,7 +207,13 @@ export function CreateAppForm({
                 style={{ backgroundColor: theme.brandOrange }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating App...' : 'Create App'}
+                {isSubmitting
+                  ? existingAppId
+                    ? 'Syncing to Registry...'
+                    : 'Creating App...'
+                  : existingAppId
+                    ? 'Sync to Registry'
+                    : 'Create App'}
               </Button>
             </div>
           </form>
