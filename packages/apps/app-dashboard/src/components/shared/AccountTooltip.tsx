@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { User } from 'lucide-react';
-import { fonts, theme as appTheme } from '@/components/user-dashboard/connect/ui/theme';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { fonts, theme as appTheme } from '@/lib/themeClasses';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
 import { SidebarMenuButton } from '@/components/shared/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/shared/ui/tooltip';
 
@@ -16,7 +16,7 @@ interface AccountTooltipProps {
 }
 
 export function AccountTooltip({ theme }: AccountTooltipProps) {
-  const { authInfo } = useReadAuthInfo();
+  const { authAddress, isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -58,9 +58,10 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
     return undefined;
   }, [isOpen, isClient]);
 
-  const formatAuthInfo = () => {
-    if (!authInfo || !isClient) return '';
-    return `Sign-In Type: ${authInfo.type}\nAuthenticated: ${new Date(authInfo.authenticatedAt).toLocaleString()}${authInfo.value ? `\nValue: ${authInfo.value}` : ''}`;
+  const formatAccountInfo = () => {
+    if (!authAddress || !isClient) return '';
+    const shortenedAddress = `${authAddress.slice(0, 6)}...${authAddress.slice(-4)}`;
+    return `Authenticated Wallet\nAddress: ${shortenedAddress}`;
   };
 
   return (
@@ -97,7 +98,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
           </SidebarMenuButton>
         </TooltipTrigger>
 
-        {authInfo && (
+        {isAuthenticated && authAddress && (
           <TooltipContent
             side="top"
             className={`${appTheme.mainCard} border ${appTheme.mainCardBorder} ${appTheme.text} max-w-sm shadow-lg`}
@@ -109,7 +110,7 @@ export function AccountTooltip({ theme }: AccountTooltipProps) {
             }}
           >
             <div className="whitespace-pre-line text-xs">
-              <div className="break-words">{formatAuthInfo()}</div>
+              <div className="break-words">{formatAccountInfo()}</div>
             </div>
           </TooltipContent>
         )}

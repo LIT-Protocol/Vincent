@@ -3,34 +3,23 @@ import type { Middleware } from '@reduxjs/toolkit';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import * as Sentry from '@sentry/react';
 import { reactClient } from '@lit-protocol/vincent-registry-sdk';
-import { getCurrentJwtTokenForStore } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
-import { env } from '@/config/env';
-import { agentPkpsApi } from './agentPkpsApi';
-
-const { VITE_ENV } = env;
-
-const BASE_URL_MAPPING = {
-  development: 'http://localhost:3000',
-  staging: 'https://staging.registry.heyvincent.ai',
-  production: 'https://registry.heyvincent.ai',
-};
-
-const BASE_URL = BASE_URL_MAPPING[VITE_ENV as keyof typeof BASE_URL_MAPPING];
+import { getSiweAuthToken } from '@/hooks/developer-dashboard/useAuth';
+import { registryUrl } from '@/config/registry';
 
 const { vincentApiClientReact, setBaseQueryFn }: any = reactClient;
 
-// Create a wrapper function that adds PKP-based SIWE authentication headers to mutation requests
-const createWithPKPAuth = (baseQuery: any) => {
+// Create a wrapper function that adds SIWE authentication headers to mutation requests
+const createWithSiweAuth = (baseQuery: any) => {
   return async (args: any, api: any, extraOptions: any) => {
     // Check if this is a mutation request (has a method other than GET or undefined)
     const isMutation =
       args && typeof args === 'object' && 'method' in args && args.method && args.method !== 'GET';
 
-    // If it's a mutation, add the PKP-based JWT authentication header
+    // If it's a mutation, add the SIWE authentication header
     if (isMutation) {
-      const jwtToken = await getCurrentJwtTokenForStore();
+      const siweToken = getSiweAuthToken();
 
-      if (!jwtToken) {
+      if (!siweToken) {
         // No valid token, don't make the request
         return {
           error: {
@@ -43,12 +32,12 @@ const createWithPKPAuth = (baseQuery: any) => {
         };
       }
 
-      // Add the authorization header to the request
+      // Add the SIWE authorization header to the request
       args = {
         ...args,
         headers: {
           ...args.headers,
-          authorization: `Bearer ${jwtToken}`,
+          authorization: `SIWE ${siweToken}`,
         },
       };
     }
@@ -58,8 +47,8 @@ const createWithPKPAuth = (baseQuery: any) => {
   };
 };
 
-// Configure the base query function with PKP-based SIWE authentication
-setBaseQueryFn(createWithPKPAuth(fetchBaseQuery({ baseUrl: BASE_URL })));
+// Configure the base query function with SIWE authentication
+setBaseQueryFn(createWithSiweAuth(fetchBaseQuery({ baseUrl: registryUrl })));
 
 /**
  * RTK Query Error Logger Middleware
@@ -80,16 +69,11 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
 export const store = configureStore({
   reducer: {
     vincentApi: (vincentApiClientReact as any).reducer,
-    agentPkpsApi: agentPkpsApi.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
-      (vincentApiClientReact as any).middleware,
-      agentPkpsApi.middleware,
-      rtkQueryErrorLogger,
-    ),
+    getDefaultMiddleware().concat((vincentApiClientReact as any).middleware, rtkQueryErrorLogger),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

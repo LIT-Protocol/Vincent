@@ -9,7 +9,7 @@ import { TextField, LongTextField, SelectField, ImageUploadField } from '../../f
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { Policy, PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { DeploymentStatusSelectField } from '../../form-fields/array/DeploymentStatusSelectField';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { policyDoc } = docSchemas;

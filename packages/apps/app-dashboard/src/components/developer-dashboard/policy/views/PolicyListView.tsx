@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { formatDate } from '@/utils/developer-dashboard/formatDateAndTime';
 import { UndeletePolicyButton } from '../wrappers';
 import { Policy } from '@/types/developer-dashboard/appTypes';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { PolicyCard } from '../../ui/PolicyCard';
 import { Logo } from '@/components/shared/ui/Logo';
 

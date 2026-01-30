@@ -6,7 +6,7 @@ import { AppsDisplay } from '../ui/AppsDisplay';
 import { AppFilter } from '../ui/AppFilter';
 import { ExplorerNav } from '../ui/ExplorerNav';
 import { FeaturedApps } from '../ui/FeaturedApps';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { env } from '@/config/env';
 
 const { VITE_OFFICIAL_APP_IDS } = env;

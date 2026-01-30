@@ -1,8 +1,7 @@
 import { ComponentProps, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { cn } from '@/lib/utils';
-import { DeveloperSidebarWrapper } from '@/components/developer-dashboard/sidebar/DeveloperSidebarWrapper';
-import { AuthenticationErrorScreen } from '@/components/user-dashboard/connect/AuthenticationErrorScreen';
+import { Sidebar } from '@/components/developer-dashboard/sidebar/Sidebar';
 import { ResourceNotOwnedError } from '@/components/developer-dashboard/ui/ResourceNotOwnedError';
 import {
   SidebarProvider,
@@ -10,15 +9,14 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/shared/ui/sidebar';
-import { theme } from '@/components/user-dashboard/connect/ui/theme';
-import { useAppAddressCheck } from '@/hooks/developer-dashboard/app/useAppAddressCheck';
+import { theme } from '@/lib/themeClasses';
 import { useAbilityAddressCheck } from '@/hooks/developer-dashboard/ability/useAbilityAddressCheck';
 import { usePolicyAddressCheck } from '@/hooks/developer-dashboard/policy/usePolicyAddressCheck';
-import { getCurrentJwt } from '@/hooks/developer-dashboard/useVincentApiWithJWT';
 import Loading from '@/components/shared/ui/Loading';
-import useReadAuthInfo from '@/hooks/user-dashboard/useAuthInfo';
+import { useAuth } from '@/hooks/developer-dashboard/useAuth';
+import { SignInScreen } from '@/components/developer-dashboard/auth/SignInScreen';
 import { ExplorerNav } from '@/components/explorer/ui/ExplorerNav';
-import { useGlobeOffset } from '@/contexts/GlobeOffsetContext';
+import { useGlobeOffset } from '@/layout/shared/GlobeOffsetContext';
 
 // Component that updates globe offset based on sidebar state
 function SidebarOffsetSync() {
@@ -42,46 +40,33 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // FIRST: Check basic authentication
-  const { authInfo, sessionSigs, isProcessing: authLoading, error } = useReadAuthInfo();
-  const isAuthenticated = authInfo?.userPKP && sessionSigs;
-
-  // Generate JWT token when authenticated (for store mutations)
-  useEffect(() => {
-    if (isAuthenticated && authInfo && sessionSigs) {
-      getCurrentJwt(authInfo, sessionSigs).catch((error) =>
-        console.error('AppLayout: Error creating JWT:', error),
-      );
-    }
-  }, [isAuthenticated, authInfo, sessionSigs]);
-
-  // Always call address check hooks (React hooks rule)
-  const appAddressCheck = useAppAddressCheck();
-  const abilityAddressCheck = useAbilityAddressCheck();
-  const policyAddressCheck = usePolicyAddressCheck();
+  // Check SIWE-based authentication
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   // Check if we're on any developer route
   const isDeveloperRoute = location.pathname.startsWith('/developer');
 
   // Determine which specific authorization check is needed based on route
-  const needsAppAuthorization = location.pathname.includes('/developer/apps/appId/');
   const needsAbilityAuthorization = location.pathname.includes('/developer/abilities/ability/');
   const needsPolicyAuthorization = location.pathname.includes('/developer/policies/policy/');
 
+  // Only call hooks when needed (React hooks rule - always call, but conditionally use)
+  const abilityAddressCheck = useAbilityAddressCheck();
+  const policyAddressCheck = usePolicyAddressCheck();
+
   // Select the appropriate authorization result based on the current route
+  // NOTE: App authorization is now handled in AppOverviewWrapper to avoid duplicate on-chain calls
   let isResourceAuthorized: boolean | null = true;
   let isResourceChecking = false;
 
-  if (needsAppAuthorization) {
-    isResourceAuthorized = appAddressCheck.isAuthorized;
-    isResourceChecking = appAddressCheck.isChecking;
-  } else if (needsAbilityAuthorization) {
+  if (needsAbilityAuthorization) {
     isResourceAuthorized = abilityAddressCheck.isAuthorized;
     isResourceChecking = abilityAddressCheck.isChecking;
   } else if (needsPolicyAuthorization) {
     isResourceAuthorized = policyAddressCheck.isAuthorized;
     isResourceChecking = policyAddressCheck.isChecking;
   }
+  // NOTE: Removed needsAppAuthorization check here - handled in AppOverviewWrapper
 
   // Common layout wrapper function
   const layoutWrapper = (content: React.ReactNode) => (
@@ -99,7 +84,7 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
         <SidebarOffsetSync />
         <ExplorerNav onNavigate={(path) => navigate(path)} sidebarTrigger={<SidebarTrigger />} />
         <div className="flex h-screen w-full relative z-10 pt-[61px]">
-          <DeveloperSidebarWrapper />
+          <Sidebar />
           <SidebarInset className="flex-1 overflow-hidden flex flex-col">
             <main className="flex-1 overflow-auto relative overflow-x-hidden flex flex-col">
               <div className="flex-1 w-full p-2 sm:p-4 md:p-6 pt-6 sm:pt-8 relative">{content}</div>
@@ -110,35 +95,22 @@ function AppLayout({ children, className }: ComponentProps<'div'>) {
     </div>
   );
 
-  // Early returns for error and loading states
-  if (isDeveloperRoute && !authLoading && !isAuthenticated) {
-    return (
-      <AuthenticationErrorScreen
-        readAuthInfo={{ authInfo, sessionSigs, isProcessing: authLoading, error }}
-      />
-    );
-  }
-
+  // Show loading while checking auth
   if (isDeveloperRoute && authLoading) {
     return layoutWrapper(<Loading />);
   }
 
-  if (
-    (needsAppAuthorization || needsAbilityAuthorization || needsPolicyAuthorization) &&
-    isResourceChecking
-  ) {
+  // Show sign-in screen if not authenticated on developer routes
+  if (isDeveloperRoute && !isAuthenticated) {
+    return <SignInScreen />;
+  }
+
+  if ((needsAbilityAuthorization || needsPolicyAuthorization) && isResourceChecking) {
     return layoutWrapper(<Loading />);
   }
 
-  if (
-    (needsAppAuthorization || needsAbilityAuthorization || needsPolicyAuthorization) &&
-    isResourceAuthorized === false
-  ) {
-    const resourceType = needsAppAuthorization
-      ? 'app'
-      : needsAbilityAuthorization
-        ? 'ability'
-        : 'policy';
+  if ((needsAbilityAuthorization || needsPolicyAuthorization) && isResourceAuthorized === false) {
+    const resourceType = needsAbilityAuthorization ? 'ability' : 'policy';
 
     return layoutWrapper(
       <ResourceNotOwnedError

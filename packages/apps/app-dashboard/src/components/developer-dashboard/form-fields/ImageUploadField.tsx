@@ -15,7 +15,7 @@ import {
   UseFormClearErrors,
 } from 'react-hook-form';
 import { processImageUpload, cleanupPreviewUrl } from '@/utils/developer-dashboard/imageUtils';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 interface ImageUploadFieldProps {
   name: string;

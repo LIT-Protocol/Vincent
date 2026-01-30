@@ -3,7 +3,7 @@ import { Label } from '@/components/shared/ui/label';
 import { UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import { Policy } from '@/types/developer-dashboard/appTypes';
 import { PolicyWithVersion } from '@/utils/developer-dashboard/sortSupportedPolicies';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { Info } from 'lucide-react';
 import { useState } from 'react';
 

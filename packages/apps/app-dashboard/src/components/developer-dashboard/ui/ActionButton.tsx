@@ -1,6 +1,6 @@
 import { ChevronRight, LucideIcon } from 'lucide-react';
 import { DashboardCard } from './DashboardCard';
-import { fonts, theme } from '@/components/user-dashboard/connect/ui/theme';
+import { fonts, theme } from '@/lib/themeClasses';
 
 interface ActionButtonProps {
   icon: LucideIcon;

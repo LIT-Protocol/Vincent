@@ -9,7 +9,7 @@ import { PolicyVersion } from '@/types/developer-dashboard/appTypes';
 import { LongTextField } from '../../form-fields';
 import { docSchemas } from '@lit-protocol/vincent-registry-sdk';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 const { policyVersionDoc } = docSchemas;
 

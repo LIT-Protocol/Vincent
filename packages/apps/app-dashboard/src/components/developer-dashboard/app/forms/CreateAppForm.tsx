@@ -10,55 +10,71 @@ import { Button } from '@/components/shared/ui/button';
 import {
   TextField,
   LongTextField,
-  ArrayField,
   ImageUploadField,
 } from '@/components/developer-dashboard/form-fields';
 import { DeploymentStatusSelectField } from '@/components/developer-dashboard/form-fields/array/DeploymentStatusSelectField';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 import { extractErrorMessage } from '@/utils/developer-dashboard/app-forms';
 
 const { appDoc } = docSchemas;
 
-const {
-  name,
-  description,
-  contactEmail,
-  appUserUrl,
-  logo,
-  redirectUris,
-  deploymentStatus,
-  delegateeAddresses,
-} = appDoc.shape;
+const { appId, name, description, contactEmail, appUrl, logo, deploymentStatus } = appDoc.shape;
 
+// Schema for creating a new app (appId will be generated on-chain)
 export const CreateAppSchema = z
   .object({
     name,
     description,
     contactEmail,
-    appUserUrl,
+    appUrl,
     logo,
-    redirectUris,
     deploymentStatus,
-    delegateeAddresses,
+  })
+  .strict();
+
+// Schema for adding existing on-chain app to registry
+export const CreateAppWithIdSchema = z
+  .object({
+    appId,
+    name,
+    description,
+    contactEmail,
+    appUrl,
+    logo,
+    deploymentStatus,
   })
   .strict();
 
 export type CreateAppFormData = z.infer<typeof CreateAppSchema>;
+export type CreateAppWithIdFormData = z.infer<typeof CreateAppWithIdSchema>;
 
 interface CreateAppFormProps {
-  onSubmit: (data: CreateAppFormData) => Promise<void>;
+  onSubmit: (data: CreateAppFormData | CreateAppWithIdFormData) => Promise<void>;
   isSubmitting?: boolean;
+  /**
+   * When provided, the form is used for recovery: syncing an app that exists
+   * on-chain but failed to sync to the registry during initial registration.
+   */
+  existingAppId?: number;
+  onSuccess?: () => void;
 }
 
-export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormProps) {
+export function CreateAppForm({
+  onSubmit,
+  isSubmitting = false,
+  existingAppId,
+  onSuccess,
+}: CreateAppFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const form = useForm<CreateAppFormData>({
-    resolver: zodResolver(CreateAppSchema),
+  // Use different schema based on whether we have an existing app ID
+  const schema = existingAppId ? CreateAppWithIdSchema : CreateAppSchema;
+
+  const form = useForm<CreateAppFormData | CreateAppWithIdFormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
-      redirectUris: [''],
-      delegateeAddresses: [''],
+      ...(existingAppId && { appId: existingAppId }),
       deploymentStatus: 'dev',
     },
   });
@@ -74,12 +90,15 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
     formState: { errors },
   } = form;
 
-  const handleFormSubmit = async (data: CreateAppFormData) => {
+  const handleFormSubmit = async (data: CreateAppFormData | CreateAppWithIdFormData) => {
     setSubmitError(null);
     setSubmitSuccess(false);
     try {
       await onSubmit(data);
       setSubmitSuccess(true);
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Failed to create app:', error);
       setSubmitError(extractErrorMessage(error, 'Failed to create app'));
@@ -129,10 +148,10 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                     />
 
                     <TextField
-                      name="appUserUrl"
+                      name="appUrl"
                       register={register}
-                      error={errors.appUserUrl?.message}
-                      label="App User URL"
+                      error={errors.appUrl?.message}
+                      label="App URL"
                       placeholder="https://yourapp.com"
                       required
                     />
@@ -163,31 +182,6 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                 </div>
               </div>
 
-              {/* Full Width Fields */}
-              <div className="space-y-6">
-                <ArrayField
-                  name="redirectUris"
-                  register={register}
-                  error={errors.redirectUris?.message}
-                  errors={errors}
-                  control={control}
-                  label="Redirect URIs"
-                  placeholder="https://yourapp.com/callback"
-                  required
-                />
-
-                <ArrayField
-                  name="delegateeAddresses"
-                  register={register}
-                  error={errors.delegateeAddresses?.message}
-                  errors={errors}
-                  control={control}
-                  label="Delegatee Addresses"
-                  placeholder="0x1234567890123456789012345678901234567890"
-                  required
-                />
-              </div>
-
               {/* Status Messages */}
               {submitError && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
@@ -200,7 +194,9 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
                   <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                   <span className="text-sm text-green-600 dark:text-green-400">
-                    App created successfully!
+                    {existingAppId
+                      ? 'App synced to registry successfully!'
+                      : 'App created successfully!'}
                   </span>
                 </div>
               )}
@@ -211,7 +207,13 @@ export function CreateAppForm({ onSubmit, isSubmitting = false }: CreateAppFormP
                 style={{ backgroundColor: theme.brandOrange }}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating App...' : 'Create App'}
+                {isSubmitting
+                  ? existingAppId
+                    ? 'Syncing to Registry...'
+                    : 'Creating App...'
+                  : existingAppId
+                    ? 'Sync to Registry'
+                    : 'Create App'}
               </Button>
             </div>
           </form>

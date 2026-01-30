@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { theme, fonts } from '@/components/user-dashboard/connect/ui/theme';
+import { theme, fonts } from '@/lib/themeClasses';
 
 export interface BreadcrumbItem {
   label: string;
