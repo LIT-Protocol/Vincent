@@ -1,7 +1,7 @@
 import type { Hex } from 'viem';
 
-import { createPublicClient, http } from 'viem';
-import { entryPoint07Address } from 'viem/account-abstraction';
+import { http } from 'viem';
+import { createBundlerClient, entryPoint07Address } from 'viem/account-abstraction';
 
 import type {
   CompleteWithdrawRequest,
@@ -12,12 +12,9 @@ import type {
 import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
 import { getChainForNetwork } from './utils/chainConfig';
 
-const POLL_INTERVAL_MS = 3000;
-const MAX_POLL_ATTEMPTS = 5; // 5 attempts * 3 seconds = 15s max wait
-
 /**
  * Submits a single signed UserOperation to the ZeroDev bundler and waits for completion.
- * Uses viem's bundler actions directly instead of kernel client to avoid any modifications.
+ * Uses viem's bundler client for proper receipt waiting.
  */
 async function submitWithdrawal(withdrawal: SignedWithdrawal): Promise<{
   network: string;
@@ -28,7 +25,7 @@ async function submitWithdrawal(withdrawal: SignedWithdrawal): Promise<{
   const { chain, chainId } = getChainForNetwork(network);
   const bundlerUrl = getZerodevBundlerRpcUrl(chainId);
 
-  const publicClient = createPublicClient({
+  const bundlerClient = createBundlerClient({
     chain,
     transport: http(bundlerUrl),
   });
@@ -41,39 +38,19 @@ async function submitWithdrawal(withdrawal: SignedWithdrawal): Promise<{
   };
 
   // Submit the signed UserOperation to the bundler
-  const userOpHash = (await publicClient.request({
+  const userOpHash = (await bundlerClient.request({
     method: 'eth_sendUserOperation' as any,
     params: [userOpForRpc, entryPoint07Address] as any,
   })) as Hex;
 
-  // Poll for receipt until confirmed
-  let receipt = null;
-  for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-
-    try {
-      receipt = await publicClient.request({
-        method: 'eth_getUserOperationReceipt' as any,
-        params: [userOpHash] as any,
-      });
-      if (receipt) break;
-    } catch {
-      // Receipt not available yet, continue polling
-    }
-  }
-
-  if (!receipt) {
-    const timeoutSeconds = (MAX_POLL_ATTEMPTS * POLL_INTERVAL_MS) / 1000;
-    throw new Error(`UserOp ${userOpHash} not confirmed after ${timeoutSeconds} seconds`);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const receiptData = receipt as any;
-  const transactionHash = receiptData.receipt?.transactionHash || receiptData.transactionHash;
+  // Wait for the UserOperation receipt
+  const receipt = await bundlerClient.waitForUserOperationReceipt({
+    hash: userOpHash,
+  });
 
   return {
     network,
-    transactionHash,
+    transactionHash: receipt.receipt.transactionHash,
     userOpHash,
   };
 }
