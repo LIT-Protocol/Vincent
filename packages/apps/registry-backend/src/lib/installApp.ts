@@ -19,9 +19,9 @@ import {
   getSmartAccountPublicClient,
 } from './chainConfig';
 import { getContractClient } from './contractClient';
-import { App } from './mongo/app';
 import { getAppInstallTypedDataToSign } from './getAppInstallTypedData';
 import { getSessionKeyApprovalTypedData } from './getSessionKeyApprovalTypedData';
+import { App } from './mongo/app';
 
 // ============================================================================
 // Utilities

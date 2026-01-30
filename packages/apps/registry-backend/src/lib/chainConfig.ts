@@ -1,4 +1,6 @@
-import { createPublicClient, http, type Chain } from 'viem';
+import type { Chain } from 'viem';
+
+import { createPublicClient, http } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 
 import { env } from '../env';

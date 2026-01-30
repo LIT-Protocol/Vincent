@@ -1,8 +1,6 @@
 import type { Wallet } from 'ethers';
 import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 
-import { parseEther } from 'viem';
-
 import { setupAgentSmartAccount } from './setupAgentSmartAccount';
 import { setupVincentApp } from './setupVincentApp';
 import { setupWallets } from './wallets/setupWallets';
