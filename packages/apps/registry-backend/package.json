@@ -1,6 +1,6 @@
 {
   "name": "@lit-protocol/registry-backend",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/copy-api-html.js",
@@ -27,7 +27,7 @@
     "@lit-protocol/vincent-ability-relay-link": "2.0.0",
     "@lit-protocol/vincent-app-sdk": "2.7.0",
     "@lit-protocol/vincent-contracts-sdk": "8.1.0",
-    "@lit-protocol/vincent-registry-sdk": "workspace:*",
+    "@lit-protocol/vincent-registry-sdk": "6.1.0",
     "@t3-oss/env-core": "^0.13.6",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/permissions": "^5.6.2",
