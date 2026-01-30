@@ -753,9 +753,6 @@ importers:
       '@lit-protocol/types':
         specifier: ^7.2.3
         version: 7.3.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@lit-protocol/vincent-app-sdk':
-        specifier: workspace:*
-        version: link:../../libs/app-sdk
       '@lit-protocol/vincent-contracts-sdk':
         specifier: workspace:*
         version: link:../../libs/contracts-sdk
