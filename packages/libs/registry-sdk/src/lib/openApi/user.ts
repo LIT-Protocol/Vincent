@@ -18,6 +18,12 @@ import {
   completeUninstallRequest,
   completeUninstallResponse,
 } from '../schemas/uninstallApp';
+import {
+  requestWithdrawRequest,
+  requestWithdrawResponse,
+  completeWithdrawRequest,
+  completeWithdrawResponse,
+} from '../schemas/withdraw';
 import { appIdParam } from './app';
 import { ErrorResponse } from './baseRegistry';
 
@@ -57,6 +63,24 @@ export function addToRegistry(registry: OpenAPIRegistry) {
   // Agent funds schemas
   const GetAgentFundsRequest = registry.register('GetAgentFundsRequest', getAgentFundsRequest);
   const GetAgentFundsResponse = registry.register('GetAgentFundsResponse', getAgentFundsResponse);
+
+  // Withdraw schemas
+  const RequestWithdrawRequest = registry.register(
+    'RequestWithdrawRequest',
+    requestWithdrawRequest,
+  );
+  const RequestWithdrawResponse = registry.register(
+    'RequestWithdrawResponse',
+    requestWithdrawResponse,
+  );
+  const CompleteWithdrawRequest = registry.register(
+    'CompleteWithdrawRequest',
+    completeWithdrawRequest,
+  );
+  const CompleteWithdrawResponse = registry.register(
+    'CompleteWithdrawResponse',
+    completeWithdrawResponse,
+  );
 
   // POST /user/:appId/install-app - Install an app for a user
   registry.registerPath({
@@ -358,6 +382,116 @@ export function addToRegistry(registry: OpenAPIRegistry) {
         content: {
           'application/json': {
             schema: GetAgentFundsResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Bad request',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      404: {
+        description: 'App not found',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      default: {
+        description: 'Error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /user/:appId/request-withdraw - Request withdrawal of tokens from agent wallet
+  registry.registerPath({
+    method: 'post',
+    path: '/user/{appId}/request-withdraw',
+    tags: ['User'],
+    summary: 'Request withdrawal',
+    description:
+      'Generates an ERC-4337 UserOperation for withdrawing tokens from the agent smart account back to the user. The user must sign the UserOperation to authorize the withdrawal.',
+    operationId: 'requestWithdraw',
+    request: {
+      params: z.object({ appId: appIdParam }),
+      body: {
+        content: {
+          'application/json': {
+            schema: RequestWithdrawRequest,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Withdrawal UserOperation returned successfully',
+        content: {
+          'application/json': {
+            schema: RequestWithdrawResponse,
+          },
+        },
+      },
+      400: {
+        description: 'Bad request',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      404: {
+        description: 'App not found',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+      default: {
+        description: 'Error',
+        content: {
+          'application/json': {
+            schema: ErrorResponse,
+          },
+        },
+      },
+    },
+  });
+
+  // POST /user/:appId/complete-withdraw - Complete withdrawal with signed UserOperation
+  registry.registerPath({
+    method: 'post',
+    path: '/user/{appId}/complete-withdraw',
+    tags: ['User'],
+    summary: 'Complete withdrawal',
+    description:
+      'Submits the signed UserOperation to the ZeroDev bundler to complete the withdrawal. The paymaster sponsors the gas.',
+    operationId: 'completeWithdraw',
+    request: {
+      params: z.object({ appId: appIdParam }),
+      body: {
+        content: {
+          'application/json': {
+            schema: CompleteWithdrawRequest,
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Withdrawal completed successfully',
+        content: {
+          'application/json': {
+            schema: CompleteWithdrawResponse,
           },
         },
       },
