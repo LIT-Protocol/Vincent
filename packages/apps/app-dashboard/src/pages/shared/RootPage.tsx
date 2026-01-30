@@ -50,15 +50,6 @@ export default function RootPage() {
     toggleTheme();
   }, []);
 
-  const handleEarnClick = useCallback(() => {
-    setIsTransitioning(true);
-    // Wait for fade out to complete before navigating
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-      navigate('/user/apps', { state: { fromTransition: true } });
-    }, 500);
-  }, [navigate]);
-
   const handleExploreClick = useCallback(() => {
     setIsTransitioning(true);
     // Wait for fade out to complete before navigating
@@ -531,26 +522,6 @@ export default function RootPage() {
                       style={fonts.heading}
                     >
                       Explore Apps
-                      <svg
-                        className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 8l4 4m0 0l-4 4m4-4H3"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={handleEarnClick}
-                      className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-gray-900 dark:text-white hover:gap-3 hover:text-[#FF4205] transition-all group rounded-full border-2 border-gray-900 dark:border-white hover:border-[#FF4205]"
-                      style={fonts.heading}
-                    >
-                      Sign Up
                       <svg
                         className="w-4 h-4 transition-transform group-hover:translate-x-1"
                         fill="none"

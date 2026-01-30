@@ -6,7 +6,7 @@ const REGISTRY_CONFIG = {
   development: { url: 'http://localhost:3000', domain: 'localhost:3000' },
   staging: { url: 'https://staging.api.heyvincent.ai', domain: 'staging.api.heyvincent.ai' },
   production: {
-    url: 'https://vincent-dashboard-20.vercel.app',
+    url: 'https://api.heyvincent.ai',
     domain: 'vincent-dashboard-20.vercel.app',
   },
 } as const;
