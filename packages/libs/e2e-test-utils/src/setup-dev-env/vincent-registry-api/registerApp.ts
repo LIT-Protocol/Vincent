@@ -1,27 +1,31 @@
 import type { AppMetadata } from '../setupVincentDevEnv';
 
-import { generateAppManagerJwt } from './generateAppManagerJwt';
+import { generateSiweAuth } from './generateSiweAuth';
 
 export async function registerApp({
   vincentApiUrl,
   appManagerPrivateKey,
   appId,
   appMetadata,
+  domain,
 }: {
   vincentApiUrl: string;
   appManagerPrivateKey: `0x${string}`;
   appId: number;
   appMetadata: AppMetadata;
+  domain?: string;
 }): Promise<void> {
-  const jwtToken = await generateAppManagerJwt({
+  const authHeader = await generateSiweAuth({
     appManagerPrivateKey,
+    vincentApiUrl,
+    domain,
   });
 
   const response = await fetch(`${vincentApiUrl}/app`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwtToken}`,
+      Authorization: authHeader,
     },
     body: JSON.stringify({
       appId,

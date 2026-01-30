@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { baseSepolia } from 'viem/chains';
+import { base, baseSepolia } from 'viem/chains';
 
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
@@ -172,19 +172,19 @@ describe('Vincent Development Environment Setup', () => {
 
   describe('PKP and Smart Account', () => {
     it('should have PKP signer address from registry API', () => {
-      expect(env.agentSmartAccount.agentSignerAddress).toBeDefined();
-      expect(env.agentSmartAccount.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(env.agentSmartAccount!.agentSignerAddress).toBeDefined();
+      expect(env.agentSmartAccount!.agentSignerAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
     it('should have smart account address', () => {
-      expect(env.agentSmartAccount.address).toBeDefined();
-      expect(env.agentSmartAccount.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(env.agentSmartAccount!.address).toBeDefined();
+      expect(env.agentSmartAccount!.address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
     it('should have smart account deployed on-chain', async () => {
       // Smart account is deployed on the smart account chain, not the Vincent Registry chain
       const provider = new ethers.providers.JsonRpcProvider(env.smartAccountChainRpcUrl);
-      const code = await provider.getCode(env.agentSmartAccount.address);
+      const code = await provider.getCode(env.agentSmartAccount!.address);
 
       expect(code).toBeDefined();
       expect(code).not.toBe('0x');
@@ -193,24 +193,31 @@ describe('Vincent Development Environment Setup', () => {
 
     it('should have deployment transaction hash (or be already deployed)', () => {
       // deploymentTxHash might be undefined if already installed
-      if (env.agentSmartAccount.deploymentTxHash) {
-        expect(env.agentSmartAccount.deploymentTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      if (env.agentSmartAccount!.deploymentTxHash) {
+        expect(env.agentSmartAccount!.deploymentTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
       }
     });
 
     it('should have serialized permission account (or be already installed)', () => {
       // serializedPermissionAccount might be undefined if already installed
-      if (env.agentSmartAccount.serializedPermissionAccount) {
-        expect(env.agentSmartAccount.serializedPermissionAccount).toBeTruthy();
-        expect(env.agentSmartAccount.serializedPermissionAccount.length).toBeGreaterThan(0);
-        expect(() => JSON.parse(env.agentSmartAccount.serializedPermissionAccount!)).not.toThrow();
+      if (env.agentSmartAccount!.serializedPermissionAccount) {
+        expect(env.agentSmartAccount!.serializedPermissionAccount).toBeTruthy();
+        expect(env.agentSmartAccount!.serializedPermissionAccount.length).toBeGreaterThan(0);
+        expect(() =>
+          Buffer.from(env.agentSmartAccount!.serializedPermissionAccount!, 'base64'),
+        ).not.toThrow();
+        const decoded = Buffer.from(
+          env.agentSmartAccount!.serializedPermissionAccount!,
+          'base64',
+        ).toString('utf-8');
+        expect(() => JSON.parse(decoded)).not.toThrow();
       }
     });
 
     it('should have permit app version transaction hash (or be already installed)', () => {
       // permitAppVersionTxHash might be undefined if already installed
-      if (env.agentSmartAccount.permitAppVersionTxHash) {
-        expect(env.agentSmartAccount.permitAppVersionTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+      if (env.agentSmartAccount!.permitAppVersionTxHash) {
+        expect(env.agentSmartAccount!.permitAppVersionTxHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
       }
     });
 
@@ -220,7 +227,7 @@ describe('Vincent Development Environment Setup', () => {
       const contractClient = getClient({ signer: wallet });
 
       const userAddress = await contractClient.getUserAddressForAgent({
-        agentAddress: env.agentSmartAccount.address as `0x${string}`,
+        agentAddress: env.agentSmartAccount!.address as `0x${string}`,
       });
 
       expect(userAddress).toBeDefined();
@@ -336,12 +343,12 @@ describe('Vincent Development Environment Setup', () => {
 
   describe('Integration Checks', () => {
     it('should have PKP and smart account addresses that are different', () => {
-      expect(env.agentSmartAccount.agentSignerAddress).not.toBe(env.agentSmartAccount.address);
-      expect(env.agentSmartAccount.agentSignerAddress).not.toBe(env.accounts.userEoa.address);
+      expect(env.agentSmartAccount!.agentSignerAddress).not.toBe(env.agentSmartAccount!.address);
+      expect(env.agentSmartAccount!.agentSignerAddress).not.toBe(env.accounts.userEoa.address);
     });
 
     it('should have smart account different from user EOA', () => {
-      expect(env.agentSmartAccount.address.toLowerCase()).not.toBe(
+      expect(env.agentSmartAccount!.address.toLowerCase()).not.toBe(
         env.accounts.userEoa.address.toLowerCase(),
       );
     });
@@ -355,7 +362,7 @@ describe('Vincent Development Environment Setup', () => {
       expect(env.accounts).toBeDefined();
       expect(env.ethersWallets).toBeDefined();
       expect(env.clients).toBeDefined();
-      expect(env.agentSmartAccount).toBeDefined();
+      expect(env.agentSmartAccount!).toBeDefined();
     });
 
     it('should have correct chain ID for Vincent Registry', () => {
@@ -375,15 +382,15 @@ describe('Vincent Development Environment Setup', () => {
         'App Manager': env.accounts.appManager.address,
         'App Delegatee': env.accounts.appDelegatee.address,
         'User EOA': env.accounts.userEoa.address,
-        'Agent Signer Address': env.agentSmartAccount.agentSignerAddress,
-        'Agent Smart Account Address': env.agentSmartAccount.address,
+        'Agent Signer Address': env.agentSmartAccount!.agentSignerAddress,
+        'Agent Smart Account Address': env.agentSmartAccount!.address,
         'Smart Account Deployment Tx':
-          env.agentSmartAccount.deploymentTxHash || 'N/A (already installed)',
-        'Serialized Permission Account': env.agentSmartAccount.serializedPermissionAccount
-          ? env.agentSmartAccount.serializedPermissionAccount.substring(0, 50) + '...'
+          env.agentSmartAccount!.deploymentTxHash || 'N/A (already installed)',
+        'Serialized Permission Account': env.agentSmartAccount!.serializedPermissionAccount
+          ? env.agentSmartAccount!.serializedPermissionAccount.substring(0, 50) + '...'
           : 'N/A (already installed)',
         'Permit App Version Tx':
-          env.agentSmartAccount.permitAppVersionTxHash || 'N/A (already installed)',
+          env.agentSmartAccount!.permitAppVersionTxHash || 'N/A (already installed)',
         'Vincent Registry Chain': `${vincentRegistryChain.name} (${vincentRegistryChain.id})`,
         'Smart Account Chain': `${smartAccountChain.name} (${smartAccountChain.id})`,
       });
