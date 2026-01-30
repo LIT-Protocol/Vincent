@@ -9,7 +9,8 @@ import type {
   SignedWithdrawal,
 } from '@lit-protocol/vincent-registry-sdk';
 
-import { getChainForNetwork, getBundlerUrlForNetwork } from './utils/chainConfig';
+import { getChainForNetwork } from './utils/chainConfig';
+import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 5; // 5 attempts * 3 seconds = 15s max wait
@@ -24,8 +25,8 @@ async function submitWithdrawal(withdrawal: SignedWithdrawal): Promise<{
   userOpHash: string;
 }> {
   const { network, userOp, signature } = withdrawal;
-  const { chain } = getChainForNetwork(network);
-  const bundlerUrl = getBundlerUrlForNetwork(network);
+  const { chain, chainId } = getChainForNetwork(network);
+  const bundlerUrl = getZerodevBundlerRpcUrl(chainId);
 
   const publicClient = createPublicClient({
     chain,

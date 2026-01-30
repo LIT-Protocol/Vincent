@@ -29,12 +29,8 @@ import type { AlchemyTokenInfo } from './utils/alchemy';
 
 import { env } from '../env';
 import { fetchTokenBalances } from './utils/alchemy';
-import {
-  SUPPORTED_NETWORKS,
-  getChainForNetwork,
-  getRpcUrlForNetwork,
-  getBundlerUrlForNetwork,
-} from './utils/chainConfig';
+import { SUPPORTED_NETWORKS, getChainForNetwork, getRpcUrlForNetwork } from './utils/chainConfig';
+import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
 
 const entryPoint = getEntryPoint('0.7');
 const kernelVersion = KERNEL_V3_3;
@@ -176,9 +172,9 @@ export async function requestWithdraw(
 
   const sponsorWithdrawalGas = env.SPONSOR_WITHDRAW_GAS;
 
-  // ZeroDev bundler URL is always required for ERC-4337 operations
-  if (!env.ZERODEV_BUNDLER_URL) {
-    throw new Error('ZERODEV_BUNDLER_URL is required for withdrawal operations');
+  // ZeroDev project ID is always required for ERC-4337 operations
+  if (!env.ZERODEV_PROJECT_ID) {
+    throw new Error('ZERODEV_PROJECT_ID is required for withdrawal operations');
   }
 
   // Group assets by network
@@ -215,9 +211,9 @@ export async function requestWithdraw(
     }
 
     try {
-      const { chain } = getChainForNetwork(network);
+      const { chain, chainId } = getChainForNetwork(network);
       const networkRpcUrl = getRpcUrlForNetwork(network);
-      const bundlerUrl = getBundlerUrlForNetwork(network);
+      const bundlerUrl = getZerodevBundlerRpcUrl(chainId);
 
       const publicClient = createPublicClient({
         chain,

@@ -27,7 +27,7 @@
     "@lit-protocol/vincent-ability-relay-link": "2.0.0",
     "@lit-protocol/vincent-app-sdk": "2.7.0",
     "@lit-protocol/vincent-contracts-sdk": "8.1.0",
-    "@lit-protocol/vincent-registry-sdk": "6.0.0",
+    "@lit-protocol/vincent-registry-sdk": "workspace:*",
     "@t3-oss/env-core": "^0.13.6",
     "@zerodev/ecdsa-validator": "^5.4.9",
     "@zerodev/permissions": "^5.6.2",

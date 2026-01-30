@@ -43,18 +43,6 @@ export function getRpcUrlForNetwork(network: string): string {
 }
 
 /**
- * Returns the ZeroDev bundler URL for a given network.
- * Appends the chain ID to the base ZERODEV_BUNDLER_URL.
- */
-export function getBundlerUrlForNetwork(network: string): string {
-  if (!env.ZERODEV_BUNDLER_URL) {
-    throw new Error('ZERODEV_BUNDLER_URL is required for bundler operations');
-  }
-  const config = getChainForNetwork(network);
-  return `${env.ZERODEV_BUNDLER_URL}/chain/${config.chainId}`;
-}
-
-/**
  * Returns the appropriate chain configuration based on IS_DEVELOPMENT.
  * - Production: Base mainnet (chain ID 8453)
  * - Development: Base Sepolia (chain ID 84532)
@@ -65,13 +53,13 @@ export function getBaseChain() {
 
 /**
  * Creates a viem public client configured for the appropriate Base network.
- * Uses BASE_RPC_URL from environment (should point to Base Sepolia in development).
+ * Uses SMART_ACCOUNT_CHAIN_RPC_URL from environment.
  */
 export function getBasePublicClient() {
   const chain = getBaseChain();
   return createPublicClient({
     chain,
-    transport: http(env.BASE_RPC_URL),
+    transport: http(env.SMART_ACCOUNT_CHAIN_RPC_URL),
   });
 }
 
