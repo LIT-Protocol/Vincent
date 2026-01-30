@@ -459,6 +459,168 @@
         ],
         "additionalProperties": false
       },
+      "BatchDelegator": {
+        "type": "object",
+        "properties": {
+          "delegatorAddress": {
+            "type": "string",
+            "description": "Ethereum address of the delegator (user who delegated ability to the app)",
+            "example": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+          },
+          "abilityParams": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Ability-specific parameters for this delegator, which override the defaults",
+            "example": {
+              "AMOUNT": "1000000000000000000"
+            }
+          }
+        },
+        "required": [
+          "delegatorAddress",
+          "abilityParams"
+        ]
+      },
+      "ExecuteBatchAbilityRequest": {
+        "type": "object",
+        "properties": {
+          "delegateePrivateKey": {
+            "type": "string",
+            "description": "Private key of the delegatee (app PKP). Used to derive the app ID automatically.",
+            "example": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+          },
+          "defaults": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Default parameters for the ability execution that apply to all delegators unless overridden",
+            "example": {
+              "ORIGIN_CHAIN_ID": 8453,
+              "DESTINATION_CHAIN_ID": 8453,
+              "ORIGIN_CURRENCY": "0x0000000000000000000000000000000000000000",
+              "DESTINATION_CURRENCY": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+              "TRADE_TYPE": "EXACT_INPUT"
+            }
+          },
+          "delegators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BatchDelegator"
+            },
+            "minItems": 1,
+            "description": "Array of delegators to execute the ability for"
+          }
+        },
+        "required": [
+          "delegateePrivateKey",
+          "delegators"
+        ]
+      },
+      "DelegatorExecutionResultSuccess": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "transactionHash": {
+            "type": "string",
+            "description": "Transaction hash of the executed UserOperation",
+            "example": "0xabc123..."
+          },
+          "userOpHash": {
+            "type": "string",
+            "description": "UserOperation hash",
+            "example": "0xdef456..."
+          }
+        },
+        "required": [
+          "success",
+          "transactionHash",
+          "userOpHash"
+        ]
+      },
+      "DelegatorExecutionResultFailure": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message describing why the execution failed",
+            "example": "Precheck failed: Insufficient balance"
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ]
+      },
+      "DelegatorExecutionResult": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DelegatorExecutionResultSuccess"
+          },
+          {
+            "$ref": "#/components/schemas/DelegatorExecutionResultFailure"
+          }
+        ]
+      },
+      "ExecuteBatchAbilityResponse": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DelegatorExecutionResult"
+            },
+            "description": "Map of delegator addresses to their execution results",
+            "example": {
+              "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb": {
+                "success": true,
+                "transactionHash": "0xabc123...",
+                "userOpHash": "0xdef456..."
+              },
+              "0x1234567890123456789012345678901234567890": {
+                "success": false,
+                "error": "Precheck failed: Insufficient balance"
+              }
+            }
+          }
+        },
+        "required": [
+          "results"
+        ]
+      },
       "AbilityCreate": {
         "type": "object",
         "properties": {
@@ -1488,11 +1650,6 @@
             "description": "EOA address that controls the user smart wallet",
             "example": "0x123456789012345678901234567890123456abcd"
           },
-          "appId": {
-            "type": "number",
-            "description": "The Vincent app ID",
-            "example": 1
-          },
           "agentSignerAddress": {
             "type": "string",
             "pattern": "^0x[a-fA-F0-9]{40}$",
@@ -1509,7 +1666,23 @@
               },
               "dataToSign": {
                 "type": "object",
-                "properties": {},
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  ]
+                },
                 "description": "The original EIP2771 typed data that was signed"
               }
             },
@@ -1530,7 +1703,23 @@
               },
               "userOperation": {
                 "type": "object",
-                "properties": {},
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {}
+                    }
+                  ]
+                },
                 "description": "The UserOperation that was signed for smart account deployment"
               }
             },
@@ -1559,7 +1748,6 @@
         },
         "required": [
           "userControllerAddress",
-          "appId",
           "agentSignerAddress",
           "appInstallation",
           "agentSmartAccountDeployment",
@@ -1677,7 +1865,23 @@
           },
           "uninstallDataToSign": {
             "type": "object",
-            "properties": {},
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {}
+                }
+              ]
+            },
             "description": "The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default)."
           }
         },
@@ -1693,7 +1897,23 @@
           },
           "uninstallDataToSign": {
             "type": "object",
-            "properties": {},
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {}
+                }
+              ]
+            },
             "description": "The uninstallDataToSign object returned from uninstall-app. Generated by the Gelato SDK."
           }
         },
@@ -3145,6 +3365,75 @@
           },
           "422": {
             "description": "Validation exception"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/app/{abilityName}/execute": {
+      "post": {
+        "tags": [
+          "App",
+          "Ability"
+        ],
+        "summary": "Executes an ability for multiple delegators in batch",
+        "description": "Executes a Vincent ability for multiple delegators using a shared delegatee private key. Each delegator can have custom parameters that override the defaults. The delegatee app ID is automatically looked up from the private key.",
+        "operationId": "executeBatchAbility",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "URL-friendly ability name (e.g., \"relay-link\")",
+            "example": "relay-link",
+            "name": "abilityName",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "description": "Batch execution request with delegatee credentials and delegator parameters",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteBatchAbilityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch execution completed (some delegators may have failed, check individual results)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExecuteBatchAbilityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input (missing required fields or invalid delegators array)"
+          },
+          "500": {
+            "description": "Server error (ability not supported, app not found, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           },
           "default": {
             "description": "Unexpected error",

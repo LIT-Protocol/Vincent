@@ -14,11 +14,13 @@ import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
 import { http } from 'viem';
 import { toAccount } from 'viem/accounts';
 
-import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
+import { deriveSmartAccountIndex, deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getSmartAccountPublicClient, getSmartAccountChain } from './chainConfig';
 import { completeRelayTransaction } from './completeRelayTransaction';
 import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
+import { App } from './mongo/app';
+import { UserAppInstallation } from './mongo/userAppInstallation';
 
 export async function completeInstallation(request: {
   userControllerAddress: Address;
@@ -71,6 +73,43 @@ export async function completeInstallation(request: {
     '[completeInstallation] App installation completed:',
     completeAppInstallationResult.transactionHash,
   );
+
+  // Step 4: Save the serialized permission account to database
+  console.log('[completeInstallation] Saving serialized permission account to database...');
+  const smartAccountPublicClient = getSmartAccountPublicClient();
+  const smartAccountChain = getSmartAccountChain();
+  const agentSmartAccountAddress = await deriveAgentAddress(
+    smartAccountPublicClient,
+    request.userControllerAddress,
+    request.appId,
+  );
+
+  // Get the app version from the app record
+  const app = await App.findOne({ appId: request.appId, isDeleted: false });
+  if (!app || app.activeVersion === undefined || app.activeVersion === null) {
+    throw new Error(
+      `Cannot save installation: app ${request.appId} not found or has no active version`,
+    );
+  }
+
+  // Use updateOne with upsert to handle race conditions and idempotency
+  await UserAppInstallation.updateOne(
+    {
+      userControllerAddress: request.userControllerAddress.toLowerCase(),
+      appId: request.appId,
+      appVersion: app.activeVersion,
+      chainId: smartAccountChain.id,
+    },
+    {
+      $set: {
+        agentSmartAccountAddress: agentSmartAccountAddress.toLowerCase(),
+        agentSignerAddress: request.agentSignerAddress.toLowerCase(),
+        serializedPermissionAccount,
+      },
+    },
+    { upsert: true },
+  );
+  console.log('[completeInstallation] Serialized permission account saved to database');
 
   return {
     deployAgentSmartAccountTransactionHash,
@@ -203,12 +242,12 @@ async function approveSessionKeyWithSignature(
   });
 
   // Serialize the permission account with the user's signature
-  // This creates a string that can be stored and later deserialized by the PKP
+  // This creates a base64-encoded string that can be stored and later deserialized by the PKP
   const serializedPermissionAccount = await serializePermissionAccount(
     userEoaKernelAccount,
     undefined,
     signature,
   );
 
-  return JSON.stringify(serializedPermissionAccount);
+  return serializedPermissionAccount;
 }

@@ -5,6 +5,7 @@ import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
 import { withSession } from '../../mongo/withSession';
 import { getPKPInfo, requireVincentAuth, withVincentAuth } from '../vincentAuth';
+import { executeBatchAbility } from './executeBatchAbility';
 import { requireApp, withApp } from './requireApp';
 import { requireAppAbility, withAppAbility } from './requireAppAbility';
 import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
@@ -565,4 +566,38 @@ export function registerRoutes(app: Express) {
       }),
     ),
   );
+
+  // Batch execute an ability for multiple delegators
+  app.post('/app/:abilityName/execute', async (req, res) => {
+    try {
+      const { abilityName } = req.params;
+      const { delegateePrivateKey, defaults, delegators } = req.body;
+
+      if (!delegateePrivateKey) {
+        res.status(400).json({ error: 'delegateePrivateKey is required' });
+        return;
+      }
+
+      if (!delegators || !Array.isArray(delegators) || delegators.length === 0) {
+        res.status(400).json({ error: 'delegators array is required and must not be empty' });
+        return;
+      }
+
+      const result = await executeBatchAbility({
+        delegateePrivateKey,
+        abilityName,
+        defaults,
+        delegators,
+      });
+
+      res.json(result);
+      return;
+    } catch (error) {
+      console.error('[batch execute] Error:', error);
+      res.status(500).json({
+        error: (error as Error).message,
+      });
+      return;
+    }
+  });
 }
