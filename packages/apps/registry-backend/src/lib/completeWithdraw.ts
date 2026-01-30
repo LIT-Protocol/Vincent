@@ -9,8 +9,8 @@ import type {
   SignedWithdrawal,
 } from '@lit-protocol/vincent-registry-sdk';
 
-import { getChainForNetwork } from './utils/chainConfig';
 import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
+import { getChainForNetwork } from './utils/chainConfig';
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 5; // 5 attempts * 3 seconds = 15s max wait

@@ -28,9 +28,9 @@ import { deriveAgentAddress, deriveSmartAccountIndex } from '@lit-protocol/vince
 import type { AlchemyTokenInfo } from './utils/alchemy';
 
 import { env } from '../env';
+import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
 import { fetchTokenBalances } from './utils/alchemy';
 import { SUPPORTED_NETWORKS, getChainForNetwork, getRpcUrlForNetwork } from './utils/chainConfig';
-import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
 
 const entryPoint = getEntryPoint('0.7');
 const kernelVersion = KERNEL_V3_3;
