@@ -7,7 +7,11 @@ import {
   VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
 } from '@lit-protocol/vincent-contracts-sdk';
 
-import { getBaseChainId, getBasePublicClient } from './chainConfig';
+import {
+  getVincentRegistryChainId,
+  getVincentRegistryPublicClient,
+  getSmartAccountPublicClient,
+} from './chainConfig';
 
 const relaySdk = new GelatoRelay();
 
@@ -19,9 +23,14 @@ export async function uninstallApp(request: {
 }) {
   const { appId, appVersion, userControllerAddress, sponsorGas = true } = request;
 
-  const basePublicClient = getBasePublicClient();
-
-  const agentAddress = await deriveAgentAddress(basePublicClient, userControllerAddress, appId);
+  // Derive agent address using smart account chain (where agent is deployed)
+  const smartAccountPublicClient = getSmartAccountPublicClient();
+  const agentAddress = await deriveAgentAddress(
+    smartAccountPublicClient,
+    userControllerAddress,
+    appId,
+  );
+  const vincentRegistryPublicClient = getVincentRegistryPublicClient();
 
   const txData = COMBINED_ABI.encodeFunctionData('unPermitAppVersion', [
     agentAddress,
@@ -42,14 +51,14 @@ export async function uninstallApp(request: {
 
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {
-      chainId: getBaseChainId() as unknown as bigint,
+      chainId: getVincentRegistryChainId() as unknown as bigint,
       target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
       data: txData,
       user: userControllerAddress,
       isConcurrent: true,
     },
     ERC2771Type.ConcurrentSponsoredCall,
-    basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+    vincentRegistryPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
   );
 
   console.log('[uninstallApp] Data to sign obtained successfully');

@@ -1,8 +1,6 @@
 import type { Wallet } from 'ethers';
 import type { Address, Chain, PrivateKeyAccount, PublicClient } from 'viem';
 
-import { parseEther } from 'viem';
-
 import { setupAgentSmartAccount } from './setupAgentSmartAccount';
 import { setupVincentApp } from './setupVincentApp';
 import { setupWallets } from './wallets/setupWallets';
@@ -10,6 +8,8 @@ import { setupWallets } from './wallets/setupWallets';
 export interface VincentDevEnvironment {
   vincentRegistryRpcUrl: string;
   vincentRegistryChain: Chain;
+  smartAccountChainRpcUrl: string;
+  smartAccountChain: Chain;
   appId: number;
   appVersion: number;
   accountIndexHash?: string;
@@ -32,8 +32,9 @@ export interface VincentDevEnvironment {
   agentSmartAccount: {
     address: Address;
     agentSignerAddress: Address;
-    deploymentTxHash?: `0x${string}`;
-    serializedPermissionAccount: string;
+    deploymentTxHash?: string;
+    serializedPermissionAccount?: string;
+    permitAppVersionTxHash?: string;
   };
 }
 
@@ -65,6 +66,8 @@ interface FundingConfig {
 export interface SetupConfig {
   vincentRegistryRpcUrl: string;
   vincentRegistryChain: Chain;
+  smartAccountChainRpcUrl: string;
+  smartAccountChain: Chain;
   vincentApiUrl: string;
   privateKeys: {
     appManager: `0x${string}`;
@@ -75,9 +78,6 @@ export interface SetupConfig {
   appMetadata: AppMetadata;
   abilityIpfsCids: string[];
   abilityPolicies: string[][];
-  zerodevProjectId: string;
-  smartAccountFundAmountBeforeDeployment?: bigint;
-  sponsorGasForAppInstallation?: boolean;
   funding?: FundingConfig;
 }
 
@@ -111,19 +111,15 @@ export async function setupVincentDevelopmentEnvironment(
     abilityPolicies: config.abilityPolicies,
   });
 
-  // Phase 3: Setup user's agent smart account (Permission creation and deployment)
+  // Phase 3: Setup user's agent smart account (sign typed data and complete installation)
   const agentSmartAccountInfo = await setupAgentSmartAccount({
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
     vincentApiUrl: config.vincentApiUrl,
     vincentRegistryChain: config.vincentRegistryChain,
-    zerodevProjectId: config.zerodevProjectId,
+    smartAccountChainRpcUrl: config.smartAccountChainRpcUrl,
+    smartAccountChain: config.smartAccountChain,
     userEoaPrivateKey: config.privateKeys.userEoa,
     vincentAppId: appInfo.appId,
-    funderPrivateKey: config.privateKeys.funder,
-    // Assume the user is deploying to Base Sepolia, and 0.005 ETH is enough for smart account deployment
-    fundAmountBeforeDeployment:
-      config.smartAccountFundAmountBeforeDeployment ?? parseEther('0.005'),
-    sponsorGasForAppInstallation: config.sponsorGasForAppInstallation,
   });
 
   console.log('=== Vincent Development Environment Setup Complete ===');
@@ -131,6 +127,8 @@ export async function setupVincentDevelopmentEnvironment(
   return {
     vincentRegistryRpcUrl: config.vincentRegistryRpcUrl,
     vincentRegistryChain: config.vincentRegistryChain,
+    smartAccountChainRpcUrl: config.smartAccountChainRpcUrl,
+    smartAccountChain: config.smartAccountChain,
     appId: appInfo.appId,
     appVersion: appInfo.appVersion,
     accountIndexHash: appInfo.accountIndexHash,
@@ -140,8 +138,9 @@ export async function setupVincentDevelopmentEnvironment(
     agentSmartAccount: {
       address: agentSmartAccountInfo.agentSmartAccountAddress,
       agentSignerAddress: agentSmartAccountInfo.agentSignerAddress,
-      deploymentTxHash: agentSmartAccountInfo.deploymentTxHash as `0x${string}`,
+      deploymentTxHash: agentSmartAccountInfo.deploymentTxHash,
       serializedPermissionAccount: agentSmartAccountInfo.serializedPermissionAccount,
+      permitAppVersionTxHash: agentSmartAccountInfo.permitAppVersionTxHash,
     },
   };
 }

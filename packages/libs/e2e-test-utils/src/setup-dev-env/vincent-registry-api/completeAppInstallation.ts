@@ -1,42 +1,73 @@
 import { Wallet } from 'ethers';
+import { privateKeyToAccount } from 'viem/accounts';
+
+export interface CompleteInstallationResult {
+  deployAgentSmartAccountTransactionHash: string;
+  serializedPermissionAccount: string;
+  completeAppInstallationTransactionHash: string;
+}
 
 export async function completeAppInstallation({
   vincentApiUrl,
   userEoaPrivateKey,
   appId,
   appInstallationDataToSign,
+  agentSmartAccountDeploymentDataToSign,
+  sessionKeyApprovalDataToSign,
+  agentSignerAddress,
 }: {
   vincentApiUrl: string;
   userEoaPrivateKey: string;
   appId: number;
   appInstallationDataToSign: any;
-}): Promise<string> {
+  agentSmartAccountDeploymentDataToSign: any;
+  sessionKeyApprovalDataToSign: any;
+  agentSignerAddress: string;
+}): Promise<CompleteInstallationResult> {
   console.log('=== Completing app installation via Vincent API (gas-sponsored) ===');
 
-  // Sign the EIP-712 typed data
+  // Sign the three pieces of typed data
   const wallet = new Wallet(userEoaPrivateKey);
-  const typedData = appInstallationDataToSign.typedData;
+  const viemAccount = privateKeyToAccount(userEoaPrivateKey as `0x${string}`);
 
-  // Remove EIP712Domain from types as ethers.js doesn't expect it
-  // (it's automatically added by ethers based on the domain object)
-  const { EIP712Domain, ...typesWithoutDomain } = typedData.types;
-
-  // EIP-712 signing: sign the typed data structure
-  const signature = await wallet._signTypedData(
-    typedData.domain,
-    typesWithoutDomain,
-    typedData.message,
+  // 1. Sign the app installation EIP-712 typed data (for permitAppVersion)
+  const appInstallationTypedData = appInstallationDataToSign.typedData;
+  const { EIP712Domain: _, ...appInstallationTypesWithoutDomain } = appInstallationTypedData.types;
+  const appInstallationSignature = await wallet._signTypedData(
+    appInstallationTypedData.domain,
+    appInstallationTypesWithoutDomain,
+    appInstallationTypedData.message,
   );
 
-  // Submit to Vincent API to complete installation (this relays the permitAppVersion call)
+  // 2. Sign the smart account deployment message (raw message from getAppInstallTypedData)
+  const agentSmartAccountDeploymentSignature = await viemAccount.signMessage({
+    message: { raw: agentSmartAccountDeploymentDataToSign.messageToSign },
+  });
+
+  // 3. Sign the session key approval (serialized permission account from getSessionKeyApprovalTypedData)
+  const sessionKeyApprovalSignature = await viemAccount.signTypedData(sessionKeyApprovalDataToSign);
+
+  // Submit to Vincent API to complete installation
   const response = await fetch(`${vincentApiUrl}/user/${appId}/complete-installation`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      typedDataSignature: signature,
-      appInstallationDataToSign,
+      userControllerAddress: viemAccount.address,
+      agentSignerAddress,
+      appId,
+      appInstallation: {
+        typedDataSignature: appInstallationSignature,
+        dataToSign: appInstallationDataToSign,
+      },
+      agentSmartAccountDeployment: {
+        typedDataSignature: agentSmartAccountDeploymentSignature,
+        userOperation: agentSmartAccountDeploymentDataToSign.userOperation,
+      },
+      sessionKeyApproval: {
+        typedDataSignature: sessionKeyApprovalSignature,
+      },
     }),
   });
 
@@ -47,7 +78,13 @@ export async function completeAppInstallation({
     );
   }
 
-  const data = (await response.json()) as { transactionHash: string };
+  const data = (await response.json()) as CompleteInstallationResult;
 
-  return data.transactionHash;
+  console.table({
+    'Deploy Smart Account Tx': data.deployAgentSmartAccountTransactionHash,
+    'Serialized Permission Account': data.serializedPermissionAccount.substring(0, 50) + '...',
+    'Complete Installation Tx': data.completeAppInstallationTransactionHash,
+  });
+
+  return data;
 }

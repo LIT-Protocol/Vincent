@@ -1229,31 +1229,248 @@
             "description": "The smart account address calculated from the PKP address, used on the frontend to verify they get the same smart wallet address",
             "example": "0x123456789012345678901234567890123456abcd"
           },
-          "rawTransaction": {
+          "appInstallationDataToSign": {
             "type": "object",
             "properties": {
-              "to": {
+              "chainId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Chain ID where the transaction will be executed",
+                "example": 84532
+              },
+              "target": {
                 "type": "string",
-                "description": "The target contract address",
+                "description": "Target contract address",
                 "example": "0x1234567890123456789012345678901234567890"
               },
               "data": {
                 "type": "string",
-                "description": "The encoded transaction data",
+                "description": "Encoded function call data",
                 "example": "0x..."
+              },
+              "user": {
+                "type": "string",
+                "description": "User address that will sign the typed data",
+                "example": "0x123456789012345678901234567890123456abcd"
+              },
+              "userNonce": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "User nonce for replay protection",
+                "example": "0"
+              },
+              "userDeadline": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "Deadline timestamp for the transaction",
+                "example": "1234567890"
               }
             },
             "required": [
-              "to",
-              "data"
+              "chainId",
+              "target",
+              "data",
+              "user",
+              "userNonce",
+              "userDeadline"
             ],
-            "additionalProperties": false,
-            "description": "Raw transaction data for direct EOA submission. Present when sponsorGas=false."
+            "description": "The EIP2771 TypedData to sign for permitAppVersion via Gelato relay (gas-sponsored). Contains the transaction details for permitting the app version on the Vincent registry."
           },
-          "appInstallationDataToSign": {
+          "agentSmartAccountDeploymentDataToSign": {
             "type": "object",
-            "properties": {},
-            "description": "The EIP2771 TypedData to sign for sponsored gas relay. Present when sponsorGas=true (default)."
+            "properties": {
+              "messageToSign": {
+                "type": "string",
+                "description": "Hex-encoded message hash to sign for UserOperation",
+                "example": "0x1234..."
+              },
+              "userOperation": {
+                "type": "object",
+                "properties": {
+                  "sender": {
+                    "type": "string",
+                    "description": "Smart account address",
+                    "example": "0x123456789012345678901234567890123456abcd"
+                  },
+                  "nonce": {
+                    "type": "string",
+                    "description": "Account nonce as string",
+                    "example": "0"
+                  },
+                  "factory": {
+                    "type": "string",
+                    "description": "Factory address for account deployment",
+                    "example": "0x1234567890123456789012345678901234567890"
+                  },
+                  "factoryData": {
+                    "type": "string",
+                    "description": "Factory calldata for deployment",
+                    "example": "0x..."
+                  },
+                  "callData": {
+                    "type": "string",
+                    "description": "Calldata for the account to execute",
+                    "example": "0x..."
+                  },
+                  "callGasLimit": {
+                    "type": "string",
+                    "description": "Gas limit for the call",
+                    "example": "100000"
+                  },
+                  "verificationGasLimit": {
+                    "type": "string",
+                    "description": "Gas limit for verification",
+                    "example": "100000"
+                  },
+                  "preVerificationGas": {
+                    "type": "string",
+                    "description": "Gas for pre-verification",
+                    "example": "50000"
+                  },
+                  "maxFeePerGas": {
+                    "type": "string",
+                    "description": "Maximum fee per gas",
+                    "example": "1000000000"
+                  },
+                  "maxPriorityFeePerGas": {
+                    "type": "string",
+                    "description": "Maximum priority fee per gas",
+                    "example": "1000000000"
+                  },
+                  "paymaster": {
+                    "type": "string",
+                    "description": "Paymaster address",
+                    "example": "0x1234567890123456789012345678901234567890"
+                  },
+                  "paymasterVerificationGasLimit": {
+                    "type": "string",
+                    "description": "Gas limit for paymaster verification",
+                    "example": "100000"
+                  },
+                  "paymasterPostOpGasLimit": {
+                    "type": "string",
+                    "description": "Gas limit for paymaster post-op",
+                    "example": "50000"
+                  },
+                  "paymasterData": {
+                    "type": "string",
+                    "description": "Paymaster-specific data",
+                    "example": "0x"
+                  },
+                  "signature": {
+                    "type": "string",
+                    "description": "Signature placeholder",
+                    "example": "0x"
+                  }
+                },
+                "required": [
+                  "sender",
+                  "nonce",
+                  "callData",
+                  "callGasLimit",
+                  "verificationGasLimit",
+                  "preVerificationGas",
+                  "maxFeePerGas",
+                  "maxPriorityFeePerGas"
+                ],
+                "description": "Complete UserOperation object that will be submitted with the signature"
+              }
+            },
+            "required": [
+              "messageToSign",
+              "userOperation"
+            ],
+            "description": "Data for signing the smart account deployment UserOperation. Contains messageToSign (hex hash) and the complete userOperation object that will be submitted with the signature."
+          },
+          "sessionKeyApprovalDataToSign": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "chainId": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  },
+                  "verifyingContract": {
+                    "type": "string"
+                  },
+                  "salt": {
+                    "type": "string"
+                  }
+                },
+                "description": "EIP-712 domain"
+              },
+              "types": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "type"
+                    ]
+                  }
+                },
+                "description": "EIP-712 type definitions"
+              },
+              "primaryType": {
+                "type": "string",
+                "description": "Primary type name"
+              },
+              "message": {
+                "type": "string",
+                "description": "Message to sign"
+              }
+            },
+            "required": [
+              "types",
+              "message"
+            ],
+            "description": "EIP-712 TypedData for session key approval. This enables the PKP signer to act on behalf of the smart account by granting it permission to execute transactions."
+          },
+          "alreadyInstalled": {
+            "type": "boolean",
+            "description": "True if the app is already installed for this user. If true, the typed data fields will be undefined."
           }
         },
         "required": [
@@ -1265,34 +1482,114 @@
       "CompleteInstallationRequest": {
         "type": "object",
         "properties": {
-          "typedDataSignature": {
+          "userControllerAddress": {
             "type": "string",
-            "description": "The signature of the typed data from the user wallet",
-            "example": "0x..."
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "EOA address that controls the user smart wallet",
+            "example": "0x123456789012345678901234567890123456abcd"
           },
-          "appInstallationDataToSign": {
+          "appId": {
+            "type": "number",
+            "description": "The Vincent app ID",
+            "example": 1
+          },
+          "agentSignerAddress": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The PKP address that will be used as the agent signer",
+            "example": "0x123456789012345678901234567890123456abcd"
+          },
+          "appInstallation": {
             "type": "object",
-            "properties": {},
-            "description": "The appInstallationDataToSign object returned from install-app. Generated by the Gelato SDK."
+            "properties": {
+              "typedDataSignature": {
+                "type": "string",
+                "description": "The signature of the EIP2771 typed data",
+                "example": "0x..."
+              },
+              "dataToSign": {
+                "type": "object",
+                "properties": {},
+                "description": "The original EIP2771 typed data that was signed"
+              }
+            },
+            "required": [
+              "typedDataSignature",
+              "dataToSign"
+            ],
+            "additionalProperties": false,
+            "description": "Signed EIP2771 typed data for permitAppVersion transaction"
+          },
+          "agentSmartAccountDeployment": {
+            "type": "object",
+            "properties": {
+              "typedDataSignature": {
+                "type": "string",
+                "description": "The signature of the UserOperation message hash",
+                "example": "0x..."
+              },
+              "userOperation": {
+                "type": "object",
+                "properties": {},
+                "description": "The UserOperation that was signed for smart account deployment"
+              }
+            },
+            "required": [
+              "typedDataSignature",
+              "userOperation"
+            ],
+            "additionalProperties": false,
+            "description": "Signed UserOperation for smart account deployment"
+          },
+          "sessionKeyApproval": {
+            "type": "object",
+            "properties": {
+              "typedDataSignature": {
+                "type": "string",
+                "description": "The signature of the session key approval EIP-712 typed data",
+                "example": "0x..."
+              }
+            },
+            "required": [
+              "typedDataSignature"
+            ],
+            "additionalProperties": false,
+            "description": "Signed permission account data for session key approval"
           }
         },
         "required": [
-          "typedDataSignature",
-          "appInstallationDataToSign"
+          "userControllerAddress",
+          "appId",
+          "agentSignerAddress",
+          "appInstallation",
+          "agentSmartAccountDeployment",
+          "sessionKeyApproval"
         ],
         "additionalProperties": false
       },
       "CompleteInstallationResponse": {
         "type": "object",
         "properties": {
-          "transactionHash": {
+          "deployAgentSmartAccountTransactionHash": {
             "type": "string",
-            "description": "The transaction hash of the completed installation",
+            "description": "Transaction hash for smart account deployment",
+            "example": "0x9d260d1bbe075be0cda52a3271df062748f3182ede91b3aae5cd115f7b26552b"
+          },
+          "serializedPermissionAccount": {
+            "type": "string",
+            "description": "Serialized permission account that can be used by the PKP to sign transactions. The permission plugin will be automatically enabled on-chain when the PKP submits its first UserOperation.",
+            "example": "{\"accountAddress\":\"0x...\",\"permissionParams\":{...}}"
+          },
+          "completeAppInstallationTransactionHash": {
+            "type": "string",
+            "description": "Transaction hash for permitAppVersion (app installation completion)",
             "example": "0x9d260d1bbe075be0cda52a3271df062748f3182ede91b3aae5cd115f7b26552b"
           }
         },
         "required": [
-          "transactionHash"
+          "deployAgentSmartAccountTransactionHash",
+          "serializedPermissionAccount",
+          "completeAppInstallationTransactionHash"
         ],
         "additionalProperties": false
       },

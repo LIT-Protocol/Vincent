@@ -1,32 +1,76 @@
+import type { Chain } from 'viem';
+
 import { createPublicClient, http } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 
 import { env } from '../env';
 
 /**
- * Returns the appropriate chain configuration based on IS_DEVELOPMENT.
- * - Production: Base mainnet (chain ID 8453)
- * - Development: Base Sepolia (chain ID 84532)
+ * Returns the Vincent Registry chain configuration based on VINCENT_REGISTRY_CHAIN_ID.
+ * This is where the Vincent Diamond contract is deployed.
  */
-export function getBaseChain() {
-  return env.IS_DEVELOPMENT ? baseSepolia : base;
+export function getVincentRegistryChain(): Chain {
+  const chainId = env.VINCENT_REGISTRY_CHAIN_ID;
+
+  if (chainId === base.id) {
+    return base;
+  } else if (chainId === baseSepolia.id) {
+    return baseSepolia;
+  }
+
+  throw new Error(`Unsupported Vincent Registry chain ID: ${chainId}`);
 }
 
 /**
- * Creates a viem public client configured for the appropriate Base network.
- * Uses BASE_RPC_URL from environment (should point to Base Sepolia in development).
+ * Creates a viem public client configured for the Vincent Registry chain.
+ * Uses VINCENT_REGISTRY_RPC_URL from environment.
  */
-export function getBasePublicClient() {
-  const chain = getBaseChain();
+export function getVincentRegistryPublicClient() {
+  const chain = getVincentRegistryChain();
   return createPublicClient({
     chain,
-    transport: http(env.BASE_RPC_URL),
+    transport: http(env.VINCENT_REGISTRY_RPC_URL),
   });
 }
 
 /**
- * Returns the chain ID for the current environment.
+ * Returns the chain ID for the Vincent Registry chain.
  */
-export function getBaseChainId(): number {
-  return getBaseChain().id;
+export function getVincentRegistryChainId(): number {
+  return env.VINCENT_REGISTRY_CHAIN_ID;
+}
+
+/**
+ * Returns the smart account chain configuration based on SMART_ACCOUNT_CHAIN_ID.
+ * This is where smart accounts are deployed and operated.
+ */
+export function getSmartAccountChain(): Chain {
+  const chainId = env.SMART_ACCOUNT_CHAIN_ID;
+
+  if (chainId === base.id) {
+    return base;
+  } else if (chainId === baseSepolia.id) {
+    return baseSepolia;
+  }
+
+  throw new Error(`Unsupported smart account chain ID: ${chainId}`);
+}
+
+/**
+ * Creates a viem public client configured for the smart account chain.
+ * Uses SMART_ACCOUNT_CHAIN_RPC_URL from environment.
+ */
+export function getSmartAccountPublicClient() {
+  const chain = getSmartAccountChain();
+  return createPublicClient({
+    chain,
+    transport: http(env.SMART_ACCOUNT_CHAIN_RPC_URL),
+  });
+}
+
+/**
+ * Returns the chain ID for the smart account chain.
+ */
+export function getSmartAccountChainId(): number {
+  return env.SMART_ACCOUNT_CHAIN_ID;
 }

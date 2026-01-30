@@ -13,8 +13,14 @@ import {
 
 import PKPHelperV2Abi from '../../contracts/datil/PKPHelperV2.json';
 import { env } from '../env';
-import { getBaseChainId, getBasePublicClient } from './chainConfig';
+import {
+  getVincentRegistryChainId,
+  getVincentRegistryPublicClient,
+  getSmartAccountPublicClient,
+} from './chainConfig';
 import { getContractClient } from './contractClient';
+import { getAppInstallTypedDataToSign } from './getAppInstallTypedData';
+import { getSessionKeyApprovalTypedData } from './getSessionKeyApprovalTypedData';
 import { App } from './mongo/app';
 
 // ============================================================================
@@ -339,9 +345,11 @@ export async function installApp(request: {
   }
 
   // 2. Calculate smart account address from user controller and appId
-  const basePublicClient = getBasePublicClient();
+  // Use smart account chain since the smart account will be deployed there
+  const vincentRegistryPublicClient = getVincentRegistryPublicClient();
+  const smartAccountPublicClient = getSmartAccountPublicClient();
   const agentSmartAccountAddress = await deriveAgentAddress(
-    basePublicClient,
+    smartAccountPublicClient,
     userControllerAddress,
     appId,
   );
@@ -367,12 +375,10 @@ export async function installApp(request: {
       // 3.1 Check if the permitted version is the same as the active version
       if (existingAgent.permittedApp.version === app.activeVersion) {
         console.log('[installApp] Agent already has this app permitted, returning existing data');
-        console.table({
-          'Agent Address': existingAgent.agentAddress,
-          'PKP Signer Address': existingAgent.permittedApp.pkpSigner,
-          'Permitted Version': existingAgent.permittedApp.version,
-          'Active Version': app.activeVersion,
-        });
+        console.log(`[installApp] Agent Address: ${existingAgent.agentAddress}`);
+        console.log(`[installApp] PKP Signer Address: ${existingAgent.permittedApp.pkpSigner}`);
+        console.log(`[installApp] Permitted Version: ${existingAgent.permittedApp.version}`);
+        console.log(`[installApp] Active Version: ${app.activeVersion}`);
         return {
           agentSignerAddress: existingAgent.permittedApp.pkpSigner,
           agentSmartAccountAddress: existingAgent.agentAddress,
@@ -383,11 +389,9 @@ export async function installApp(request: {
       console.log(
         `[installApp] Agent has already permitted this app, but the permitted version is different from the active version. Minting new PKP and permitting new version`,
       );
-      console.table({
-        'Agent Address': existingAgent.agentAddress,
-        'Permitted Version': existingAgent.permittedApp.version,
-        'Active Version': app.activeVersion,
-      });
+      console.log(`[installApp] Agent Address: ${existingAgent.agentAddress}`);
+      console.log(`[installApp] Permitted Version: ${existingAgent.permittedApp.version}`);
+      console.log(`[installApp] Active Version: ${app.activeVersion}`);
       // Fall through to fresh install flow below which will mint a new PKP
     }
   }
@@ -402,12 +406,16 @@ export async function installApp(request: {
     console.log(
       '[installApp] Agent has an unpermitted this app, repermitting it with existing PKP',
     );
-    console.table({
-      'Agent Address': agentSmartAccountAddress,
-      'Unpermitted App': unpermittedApp.appId,
-      'Previous Permitted Version': unpermittedApp.previousPermittedVersion,
-      'Active Version': app.activeVersion,
-    });
+    console.log(
+      '[installApp] Agent Address:',
+      agentSmartAccountAddress,
+      'Unpermitted App:',
+      unpermittedApp.appId,
+      'Previous Permitted Version:',
+      unpermittedApp.previousPermittedVersion,
+      'Active Version:',
+      app.activeVersion,
+    );
     const txData = COMBINED_ABI.encodeFunctionData('rePermitApp', [
       agentSmartAccountAddress,
       appId,
@@ -427,14 +435,14 @@ export async function installApp(request: {
 
     const dataToSign = await relaySdk.getDataToSignERC2771(
       {
-        chainId: getBaseChainId() as unknown as bigint,
+        chainId: getVincentRegistryChainId() as unknown as bigint,
         target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
         data: txData,
         user: userControllerAddress,
         isConcurrent: true,
       },
       ERC2771Type.ConcurrentSponsoredCall,
-      basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+      vincentRegistryPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
     );
 
     return {
@@ -454,20 +462,20 @@ export async function installApp(request: {
     throw new Error(`App version ${app.activeVersion} not found on-chain for app ${appId}`);
   }
 
-  // 5. Extract IPFS CIDs from on-chain abilities
+  // 6. Extract IPFS CIDs from on-chain abilities
   const abilityIpfsCids = appVersionResult.appVersion.abilities.map(
     (ability) => ability.abilityIpfsCid,
   );
 
   console.log('[installApp] Found abilities:', { count: abilityIpfsCids.length, abilityIpfsCids });
 
-  // 6. Build auth methods from ability IPFS CIDs
+  // 7. Build auth methods from ability IPFS CIDs
   const permittedAuthMethodTypes = abilityIpfsCids.map(() => AUTH_METHOD_TYPE.LitAction);
   const permittedAuthMethodIds = abilityIpfsCids.map((cid) => base58ToHex(cid));
   const permittedAuthMethodPubkeys = abilityIpfsCids.map(() => '0x');
   const permittedAuthMethodScopes = abilityIpfsCids.map(() => [AUTH_METHOD_SCOPE.SignAnything]);
 
-  // 7. Mint the PKP (will be burned)
+  // 8. Mint the PKP (will be burned)
   const mintTx = await mintPkpWithAuthMethods({
     types: permittedAuthMethodTypes,
     ids: permittedAuthMethodIds,
@@ -476,7 +484,7 @@ export async function installApp(request: {
   });
   console.log(`[installApp] Mint tx submitted: ${mintTx.hash}`);
 
-  // 8. Wait for mint confirmation and extract PKP
+  // 9. Wait for mint confirmation and extract PKP
   const signer = getTransactionSigner();
   const provider = signer.provider;
   if (!provider || !mintTx.hash) {
@@ -491,7 +499,7 @@ export async function installApp(request: {
     `[installApp] Complete. App ${appId} v${app.activeVersion}, PKP: ${pkp.ethAddress}, SmartAccount: ${agentSmartAccountAddress}`,
   );
 
-  // 9. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
+  // 10. Build EIP2771 data for user to sign (permitAppVersion on Vincent contract)
   // pkpSignerPubKey is the raw public key bytes (contract expects bytes calldata)
   const pkpSignerPubKey = pkp.publicKey;
 
@@ -501,16 +509,15 @@ export async function installApp(request: {
 
   console.log('[installApp] Encoding permitAppVersion call...');
 
-  // Use ethers Interface to encode the function call (COMBINED_ABI is an ethers Interface)
   const txData = COMBINED_ABI.encodeFunctionData('permitAppVersion', [
-    agentSmartAccountAddress, // agentAddress
-    pkp.ethAddress, // pkpSigner
-    pkpSignerPubKey, // pkpSignerPubKey
-    appId, // appId
-    app.activeVersion, // appVersion
-    abilityIpfsCids, // abilityIpfsCids
-    policyIpfsCids, // policyIpfsCids
-    policyParameterValues, // policyParameterValues
+    agentSmartAccountAddress,
+    pkp.ethAddress,
+    pkpSignerPubKey,
+    appId,
+    app.activeVersion,
+    abilityIpfsCids,
+    policyIpfsCids,
+    policyParameterValues,
   ]);
 
   // If sponsorGas is false, return raw transaction for direct EOA submission
@@ -528,24 +535,37 @@ export async function installApp(request: {
 
   console.log('[installApp] Getting EIP2771 data to sign...');
 
-  // Types don't match (SDK expects ethers, we pass viem) but works at runtime
   const dataToSign = await relaySdk.getDataToSignERC2771(
     {
-      chainId: getBaseChainId() as unknown as bigint,
+      chainId: getVincentRegistryChainId() as unknown as bigint,
       target: VINCENT_DIAMOND_CONTRACT_ADDRESS_PROD,
       data: txData,
       user: userControllerAddress,
       isConcurrent: true,
     },
     ERC2771Type.ConcurrentSponsoredCall,
-    basePublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
+    vincentRegistryPublicClient as unknown as Parameters<typeof relaySdk.getDataToSignERC2771>[2],
   );
+  console.log('[installApp] Data to sign Vincent registry app permission obtained successfully');
 
-  console.log('[installApp] Data to sign obtained successfully');
+  const agentSmartAccountDeploymentDataToSign = await getAppInstallTypedDataToSign({
+    userControllerAddress: userControllerAddress as `0x${string}`,
+    appId,
+  });
+  console.log('[installApp] Data to sign smart account deployment obtained successfully');
+
+  const sessionKeyApprovalDataToSign = await getSessionKeyApprovalTypedData({
+    userControllerAddress: userControllerAddress as `0x${string}`,
+    agentSignerAddress: pkp.ethAddress as `0x${string}`,
+    appId,
+  });
+  console.log('[installApp] Data to sign session key approval obtained successfully');
 
   return {
     agentSignerAddress: pkp.ethAddress,
     agentSmartAccountAddress,
     appInstallationDataToSign: dataToSign,
+    agentSmartAccountDeploymentDataToSign,
+    sessionKeyApprovalDataToSign,
   };
 }

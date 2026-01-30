@@ -6,16 +6,20 @@ import type {
 import { deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
 
 import { env } from '../env';
-import { getBasePublicClient } from './chainConfig';
+import { getSmartAccountPublicClient } from './chainConfig';
 
 export async function getAgentFunds(
   request: GetAgentFundsRequest & { appId: number },
 ): Promise<GetAgentFundsResponse> {
   const { appId, userControllerAddress, networks } = request;
 
-  // Derive the agent smart account address
-  const basePublicClient = getBasePublicClient();
-  const agentAddress = await deriveAgentAddress(basePublicClient, userControllerAddress, appId);
+  // Derive the agent smart account address (uses smart account chain)
+  const smartAccountPublicClient = getSmartAccountPublicClient();
+  const agentAddress = await deriveAgentAddress(
+    smartAccountPublicClient,
+    userControllerAddress,
+    appId,
+  );
 
   // Call Alchemy Portfolio API
   const alchemyUrl = `https://api.g.alchemy.com/data/v1/${env.ALCHEMY_API_KEY}/assets/tokens/by-address`;
