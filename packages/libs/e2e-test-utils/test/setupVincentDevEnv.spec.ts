@@ -1,9 +1,11 @@
 import { ethers } from 'ethers';
-import { base, baseSepolia } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
+
 import { getClient } from '@lit-protocol/vincent-contracts-sdk';
 
-import { getEnv, setupVincentDevelopmentEnvironment } from '../src';
 import type { VincentDevEnvironment } from '../src';
+
+import { getEnv, setupVincentDevelopmentEnvironment } from '../src';
 
 // Extend Jest timeout to 5 minutes for setup
 jest.setTimeout(300000);

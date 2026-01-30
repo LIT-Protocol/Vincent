@@ -1,8 +1,9 @@
 import type { Address, Chain } from 'viem';
+
 import { createPublicClient, http } from 'viem';
 
-import { installApp } from './vincent-registry-api/installApp';
 import { completeAppInstallation } from './vincent-registry-api/completeAppInstallation';
+import { installApp } from './vincent-registry-api/installApp';
 
 export interface AgentSmartAccountInfo {
   agentSignerAddress: Address;

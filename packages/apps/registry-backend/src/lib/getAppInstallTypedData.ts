@@ -1,8 +1,11 @@
-import { http, type Address } from 'viem';
-import { toAccount } from 'viem/accounts';
+import type { Address } from 'viem';
+
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { createKernelAccount, createKernelAccountClient } from '@zerodev/sdk';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import { http } from 'viem';
+import { toAccount } from 'viem/accounts';
+
 import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
 
 import { getSmartAccountPublicClient, getSmartAccountChain } from './chainConfig';

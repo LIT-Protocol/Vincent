@@ -1,24 +1,26 @@
 import type { ConcurrentPayloadToSign } from '@gelatonetwork/relay-sdk/dist/lib/erc2771/types';
-import { http, type Address, type Hex } from 'viem';
-import { toAccount } from 'viem/accounts';
+import type { Address, Hex } from 'viem';
+
+import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
+import { toPermissionValidator, serializePermissionAccount } from '@zerodev/permissions';
+import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { toECDSASigner } from '@zerodev/permissions/signers';
 import {
   createKernelAccount,
   createKernelAccountClient,
   addressToEmptyAccount,
 } from '@zerodev/sdk';
-import { signerToEcdsaValidator } from '@zerodev/ecdsa-validator';
 import { getEntryPoint, KERNEL_V3_3 } from '@zerodev/sdk/constants';
-import { deriveSmartAccountIndex } from '@lit-protocol/vincent-contracts-sdk';
-import { toECDSASigner } from '@zerodev/permissions/signers';
-import { toPermissionValidator, serializePermissionAccount } from '@zerodev/permissions';
-import { toSudoPolicy } from '@zerodev/permissions/policies';
+import { http } from 'viem';
+import { toAccount } from 'viem/accounts';
 
-import { completeRelayTransaction } from './completeRelayTransaction';
+import { deriveSmartAccountIndex, deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
+
 import { getSmartAccountPublicClient, getSmartAccountChain } from './chainConfig';
+import { completeRelayTransaction } from './completeRelayTransaction';
 import { getZerodevBundlerRpcUrl } from './getZerodevBundlerRpcUrl';
-import { UserAppInstallation } from './mongo/userAppInstallation';
-import { deriveAgentAddress } from '@lit-protocol/vincent-contracts-sdk';
 import { App } from './mongo/app';
+import { UserAppInstallation } from './mongo/userAppInstallation';
 
 export async function completeInstallation(request: {
   userControllerAddress: Address;

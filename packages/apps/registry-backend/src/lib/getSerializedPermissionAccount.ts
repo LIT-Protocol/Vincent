@@ -1,8 +1,8 @@
 import type { Address } from 'viem';
 
-import { UserAppInstallation } from './mongo/userAppInstallation';
 import { getSmartAccountChain } from './chainConfig';
 import { App } from './mongo/app';
+import { UserAppInstallation } from './mongo/userAppInstallation';
 
 export interface GetSerializedPermissionAccountParams {
   userControllerAddress: Address;

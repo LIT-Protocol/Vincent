@@ -5,13 +5,13 @@ import { getContractClient } from '../../contractClient';
 import { App, AppAbility, AppVersion } from '../../mongo/app';
 import { withSession } from '../../mongo/withSession';
 import { getPKPInfo, requireVincentAuth, withVincentAuth } from '../vincentAuth';
+import { executeBatchAbility } from './executeBatchAbility';
 import { requireApp, withApp } from './requireApp';
 import { requireAppAbility, withAppAbility } from './requireAppAbility';
 import { requireAppOnChain, withAppOnChain } from './requireAppOnChain';
 import { requireAppVersion, withAppVersion } from './requireAppVersion';
 import { requireAppVersionNotOnChain } from './requireAppVersionNotOnChain';
 import { requireUserManagesApp } from './requireUserManagesApp';
-import { executeBatchAbility } from './executeBatchAbility';
 
 const NEW_APP_APPVERSION = 1;
 
