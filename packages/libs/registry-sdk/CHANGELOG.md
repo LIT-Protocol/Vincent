@@ -1,3 +1,26 @@
+## 6.2.0 (2026-01-31)
+
+### 🚀 Features
+
+- Add withdrawal endpoints for users to withdraw tokens from their agent smart accounts ([89eb5329](https://github.com/LIT-Protocol/Vincent/commit/89eb5329))
+
+  **registry-backend:**
+  - Add `POST /user/:appId/request-withdraw` endpoint to prepare unsigned UserOperations for withdrawing tokens
+  - Add `POST /user/:appId/complete-withdraw` endpoint to submit signed UserOperations and execute withdrawals
+  - Add `SPONSOR_WITHDRAW_GAS` env var to optionally sponsor gas fees via ZeroDev paymaster
+  - Add Alchemy utility for fetching token balances with metadata
+  - Refactor chainConfig into utils with network-specific bundler URL support
+  - Add integration tests for withdrawal flow
+    **registry-sdk:**
+  - Add `POST /user/:appId/request-withdraw` endpoint schema
+  - Add `POST /user/:appId/complete-withdraw` endpoint schema
+  - Add withdraw types: `Asset`, `RequestWithdrawRequest`, `RequestWithdrawResponse`, `SignedWithdrawal`, `CompleteWithdrawRequest`, `CompleteWithdrawResponse`
+  - Regenerate RTK clients
+
+### ❤️ Thank You
+
+- awisniew207 @awisniew207
+
 # 6.0.0 (2026-01-30)
 
 ### 🚀 Features

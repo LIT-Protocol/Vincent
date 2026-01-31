@@ -1158,8 +1158,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       '@lit-protocol/vincent-ability-relay-link':
-        specifier: 2.0.0
-        version: 2.0.0(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
+        specifier: 2.0.1
+        version: 2.0.1(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       '@lit-protocol/vincent-app-sdk':
         specifier: 2.7.0
         version: 2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
@@ -3839,8 +3839,8 @@ packages:
   '@lit-protocol/uint8arrays@7.3.1':
     resolution: {integrity: sha512-Y591CUPt17GzlDeQmcjCgMS77gGatHebIgEAgk7oV0oH2I1w6MooHLy6zWwXIlXh/8O5ZY6G6gcdzgmjz6f+Ng==}
 
-  '@lit-protocol/vincent-ability-relay-link@2.0.0':
-    resolution: {integrity: sha512-Cq9+josnzVIq3wjW+ac8Qd2O1AYiS0V2DajCZxPpLCcNNV9Qx3Fujww4erJJkVkgoi1TvypGqgKs6ZIljnaYNw==}
+  '@lit-protocol/vincent-ability-relay-link@2.0.1':
+    resolution: {integrity: sha512-2yPfrmNLa6Qu2FEK5J0TqEh5ZHorC1qKSLO3hmnAm6Ldsk6ONHWnhr5hNIg0Stclg1bGrvQtsbLjf9LD7CY6NQ==}
     peerDependencies:
       '@lit-protocol/vincent-app-sdk': ^2.7.0
 
@@ -18330,7 +18330,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@lit-protocol/vincent-ability-relay-link@2.0.0(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)':
+  '@lit-protocol/vincent-ability-relay-link@2.0.1(@lit-protocol/vincent-app-sdk@2.7.0(bufferutil@4.0.9)(debug@4.4.3)(react@19.2.1)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(@zerodev/webauthn-key@5.5.0(viem@2.38.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)))(bufferutil@4.0.9)(debug@4.4.3)(ox@0.8.1(typescript@5.8.3)(zod@3.25.64))(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)':
     dependencies:
       '@crossmint/wallets-sdk': 0.18.9(@solana/web3.js@1.98.4(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.25.64)
       '@lit-protocol/vincent-ability-sdk': 3.0.2(bufferutil@4.0.9)(debug@4.4.3)(typescript@5.8.3)(utf-8-validate@5.0.10)
