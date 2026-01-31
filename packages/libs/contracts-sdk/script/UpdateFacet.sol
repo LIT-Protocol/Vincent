@@ -12,6 +12,7 @@ import {VincentAppViewFacet} from "../contracts/facets/VincentAppViewFacet.sol";
 import {VincentUserFacet} from "../contracts/facets/VincentUserFacet.sol";
 import {VincentUserViewFacet} from "../contracts/facets/VincentUserViewFacet.sol";
 import {VincentERC2771Facet} from "../contracts/facets/VincentERC2771Facet.sol";
+import {VincentZeroDevConfigFacet} from "../contracts/facets/VincentZeroDevConfigFacet.sol";
 
 /**
  * @title Smart UpdateFacet with Auto-Detection
@@ -196,6 +197,8 @@ contract SmartUpdateFacet is Script {
             return getVincentUserViewFacetSelectors();
         } else if (compareStrings(facetName, "VincentERC2771Facet")) {
             return getVincentERC2771FacetSelectors();
+        } else if (compareStrings(facetName, "VincentZeroDevConfigFacet")) {
+            return getVincentZeroDevConfigFacetSelectors();
         } else {
             revert("Invalid facet name");
         }
@@ -229,6 +232,8 @@ contract SmartUpdateFacet is Script {
             testSelector = VincentUserViewFacet.getPermittedAppForAgents.selector;
         } else if (compareStrings(facetName, "VincentERC2771Facet")) {
             testSelector = VincentERC2771Facet.setTrustedForwarder.selector;
+        } else if (compareStrings(facetName, "VincentZeroDevConfigFacet")) {
+            testSelector = VincentZeroDevConfigFacet.setEcdsaValidatorAddress.selector;
         } else {
             return false;
         }
@@ -276,6 +281,8 @@ contract SmartUpdateFacet is Script {
             return address(new VincentUserViewFacet{salt: salt}());
         } else if (compareStrings(facetName, "VincentERC2771Facet")) {
             return address(new VincentERC2771Facet{salt: salt}());
+        } else if (compareStrings(facetName, "VincentZeroDevConfigFacet")) {
+            return address(new VincentZeroDevConfigFacet{salt: salt}());
         } else {
             revert("Invalid facet name");
         }
@@ -335,10 +342,18 @@ contract SmartUpdateFacet is Script {
         return selectors;
     }
 
+    function getVincentZeroDevConfigFacetSelectors() internal pure returns (bytes4[] memory) {
+        bytes4[] memory selectors = new bytes4[](2);
+        selectors[0] = VincentZeroDevConfigFacet.setEcdsaValidatorAddress.selector;
+        selectors[1] = VincentZeroDevConfigFacet.getEcdsaValidatorAddress.selector;
+        return selectors;
+    }
+
     function isValidFacetName(string memory facetName) internal pure returns (bool) {
         return compareStrings(facetName, "VincentAppFacet") || compareStrings(facetName, "VincentAppViewFacet")
             || compareStrings(facetName, "VincentUserFacet") || compareStrings(facetName, "VincentUserViewFacet")
-            || compareStrings(facetName, "VincentERC2771Facet");
+            || compareStrings(facetName, "VincentERC2771Facet")
+            || compareStrings(facetName, "VincentZeroDevConfigFacet");
     }
 
     function contains(bytes4[] memory array, bytes4 selector) internal pure returns (bool) {

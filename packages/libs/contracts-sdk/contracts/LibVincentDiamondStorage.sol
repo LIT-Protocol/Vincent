@@ -112,3 +112,18 @@ library VincentUserStorage {
         }
     }
 }
+
+library VincentZeroDevStorage {
+    bytes32 internal constant ZERODEV_STORAGE_SLOT = keccak256("lit.vincent.zerodev.storage");
+
+    struct ZeroDevStorage {
+        address ecdsaValidatorAddress;
+    }
+
+    function zeroDevStorage() internal pure returns (ZeroDevStorage storage zs) {
+        bytes32 slot = ZERODEV_STORAGE_SLOT;
+        assembly {
+            zs.slot := slot
+        }
+    }
+}

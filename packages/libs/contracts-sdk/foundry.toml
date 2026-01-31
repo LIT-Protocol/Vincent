@@ -6,6 +6,7 @@ solc_version = "0.8.29"
 evm_version = "prague"
 bytecode_hash = "none"
 cbor_metadata = false
+fs_permissions = [{ access = "read-write", path = "./test/fixtures" }]
 
 remappings = ["forge-std/=lib/forge-std/src/", "@aave-dao/aave-v3-origin/=node_modules/@aave-dao/aave-v3-origin/", "@aerodrome/contracts/=lib/contracts/contracts/"]
 via_ir = true

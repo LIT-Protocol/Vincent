@@ -11,6 +11,7 @@ import "../contracts/facets/VincentAppViewFacet.sol";
 import "../contracts/facets/VincentUserFacet.sol";
 import "../contracts/facets/VincentUserViewFacet.sol";
 import "../contracts/facets/VincentERC2771Facet.sol";
+import "../contracts/facets/VincentZeroDevConfigFacet.sol";
 import "../contracts/VincentBase.sol";
 import "../contracts/diamond-base/interfaces/IDiamondCut.sol";
 import "../contracts/diamond-base/interfaces/IDiamondLoupe.sol";
@@ -23,6 +24,7 @@ import "../contracts/diamond-base/interfaces/IERC173.sol";
  * @dev Uses environment variables for deployment configuration and CREATE2 for deterministic addresses
  * @custom:env VINCENT_DEPLOYER_PRIVATE_KEY - Private key of the deployer
  * @custom:env VINCENT_GELATO_FORWARDER_ADDRESS - Gelato trusted forwarder address for EIP-2771 gasless transactions
+ * @custom:env VINCENT_ECDSA_VALIDATOR_ADDRESS - ZeroDev ECDSA validator contract address for smart account owner verification
  */
 contract DeployVincentDiamond is Script {
     /**
@@ -49,6 +51,7 @@ contract DeployVincentDiamond is Script {
         VincentUserFacet userFacet = new VincentUserFacet{salt: create2Salt}();
         VincentUserViewFacet userViewFacet = new VincentUserViewFacet{salt: create2Salt}();
         VincentERC2771Facet erc2771Facet = new VincentERC2771Facet{salt: create2Salt}();
+        VincentZeroDevConfigFacet zeroDevConfigFacet = new VincentZeroDevConfigFacet{salt: create2Salt}();
 
         // Create facets struct
         facets = VincentDiamond.FacetAddresses({
@@ -58,7 +61,8 @@ contract DeployVincentDiamond is Script {
             vincentAppViewFacet: address(appViewFacet),
             vincentUserFacet: address(userFacet),
             vincentUserViewFacet: address(userViewFacet),
-            vincentERC2771Facet: address(erc2771Facet)
+            vincentERC2771Facet: address(erc2771Facet),
+            vincentZeroDevConfigFacet: address(zeroDevConfigFacet)
         });
 
         diamondCutFacetAddress = address(diamondCutFacet);
@@ -84,6 +88,7 @@ contract DeployVincentDiamond is Script {
         console.log("VincentUserFacet:", facets.vincentUserFacet);
         console.log("VincentUserViewFacet:", facets.vincentUserViewFacet);
         console.log("VincentERC2771Facet:", facets.vincentERC2771Facet);
+        console.log("VincentZeroDevConfigFacet:", facets.vincentZeroDevConfigFacet);
     }
 
     /**
@@ -113,12 +118,21 @@ contract DeployVincentDiamond is Script {
         address gelatoForwarder = vm.envOr("VINCENT_GELATO_FORWARDER_ADDRESS", address(0));
         console.log("Gelato trusted forwarder for chain", block.chainid, ":", gelatoForwarder);
 
+        // Get the ECDSA validator address from environment variable
+        // This is required for smart account owner verification
+        address ecdsaValidatorAddress = vm.envAddress("VINCENT_ECDSA_VALIDATOR_ADDRESS");
+        if (ecdsaValidatorAddress == address(0)) {
+            revert MissingEnvironmentVariable("VINCENT_ECDSA_VALIDATOR_ADDRESS");
+        }
+        console.log("ECDSA Validator address for chain", block.chainid, ":", ecdsaValidatorAddress);
+
         // Deploy the Diamond with the diamondCut facet and all other facets in one transaction using CREATE2
         VincentDiamond diamond = new VincentDiamond{salt: create2Salt}(
             deployerAddress, // contract owner
             diamondCutFacetAddress, // diamond cut facet
             facets, // all other facets
-            gelatoForwarder // trusted forwarder for EIP-2771
+            gelatoForwarder, // trusted forwarder for EIP-2771
+            ecdsaValidatorAddress // ECDSA validator for smart account owner verification
         );
 
         // Stop broadcasting transactions

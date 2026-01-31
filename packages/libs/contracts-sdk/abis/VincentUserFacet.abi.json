@@ -365,11 +365,6 @@
   },
   {
     "type": "error",
-    "name": "AgentNotRegisteredToUser",
-    "inputs": []
-  },
-  {
-    "type": "error",
     "name": "AgentRegisteredToDifferentUser",
     "inputs": [
       {
@@ -608,6 +603,27 @@
         "name": "rePermitAppId",
         "type": "uint40",
         "internalType": "uint40"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotAgentOwner",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "agent",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "owner",
+        "type": "address",
+        "internalType": "address"
       }
     ]
   },

@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {DeployVincentDiamond} from "../../script/DeployVincentDiamond.sol";
+import {TestHelpers} from "../TestHelpers.sol";
 
 import {VincentDiamond} from "../../contracts/VincentDiamond.sol";
 import {VincentAppFacet} from "../../contracts/facets/VincentAppFacet.sol";
@@ -16,7 +17,7 @@ import {LibVincentAppFacet} from "../../contracts/libs/LibVincentAppFacet.sol";
 import {LibVincentUserFacet} from "../../contracts/libs/LibVincentUserFacet.sol";
 import {VincentBase} from "../../contracts/VincentBase.sol";
 
-contract VincentUserFacetTest is Test {
+contract VincentUserFacetTest is TestHelpers {
     string constant ABILITY_IPFS_CID_1 = "QmAbility1";
     string constant ABILITY_IPFS_CID_2 = "QmAbility2";
     string constant ABILITY_IPFS_CID_3 = "QmAbility3";
@@ -69,8 +70,17 @@ contract VincentUserFacetTest is Test {
     string[] abilityIpfsCids = new string[](2);
 
     function setUp() public {
+        // Setup the ECDSA validator at the canonical address
+        setupECDSAValidator();
+
         uint256 deployerPrivateKey = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
         vm.setEnv("VINCENT_DEPLOYER_PRIVATE_KEY", vm.toString(deployerPrivateKey));
+
+        // Set a test forwarder address for local testing (required by deployment)
+        vm.setEnv("VINCENT_GELATO_FORWARDER_ADDRESS", vm.toString(makeAddr("TrustedForwarder")));
+
+        // Set the ECDSA validator address for testing
+        vm.setEnv("VINCENT_ECDSA_VALIDATOR_ADDRESS", vm.toString(ECDSA_VALIDATOR_ADDRESS));
 
         DeployVincentDiamond deployScript = new DeployVincentDiamond();
 
@@ -92,6 +102,12 @@ contract VincentUserFacetTest is Test {
 
         abilityIpfsCids[0] = ABILITY_IPFS_CID_1;
         abilityIpfsCids[1] = ABILITY_IPFS_CID_2;
+
+        // Register smart account owners
+        // This simulates Frank and George owning their agents (smart accounts)
+        registerSmartAccountOwner(FRANK_AGENT_ADDRESS, USER_FRANK);
+        registerSmartAccountOwner(FRANK_AGENT_ADDRESS_2, USER_FRANK);
+        registerSmartAccountOwner(GEORGE_AGENT_ADDRESS, USER_GEORGE);
     }
 
     function testPermitAppVersion() public {
@@ -1243,8 +1259,16 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
 
         // Now try to have USER_GEORGE use the same agent address
+        // This should fail with NotAgentOwner since the modifier is checked first
         vm.startPrank(USER_GEORGE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AgentRegisteredToDifferentUser.selector, USER_FRANK));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.NotAgentOwner.selector,
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // actual owner
+            )
+        );
         vincentUserFacet.permitAppVersion(
             FRANK_AGENT_ADDRESS, // Same agent address
             GEORGE_PKP_SIGNER,
@@ -1314,9 +1338,17 @@ contract VincentUserFacetTest is Test {
         );
         vm.stopPrank();
 
-        // USER_GEORGE tries to unpermit FRANK_AGENT_ADDRESS (which is not registered to them)
+        // USER_GEORGE tries to unpermit FRANK_AGENT_ADDRESS
+        // This should fail with NotAgentOwner since the modifier is checked first
         vm.startPrank(USER_GEORGE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AgentNotRegisteredToUser.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.NotAgentOwner.selector,
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
+            )
+        );
         vincentUserFacet.unPermitAppVersion(FRANK_AGENT_ADDRESS, newAppId, newAppVersion);
         vm.stopPrank();
     }
@@ -1342,9 +1374,17 @@ contract VincentUserFacetTest is Test {
         vincentUserFacet.unPermitAppVersion(FRANK_AGENT_ADDRESS, newAppId, newAppVersion);
         vm.stopPrank();
 
-        // USER_GEORGE tries to re-permit FRANK_AGENT_ADDRESS (which is not registered to them)
+        // USER_GEORGE tries to re-permit FRANK_AGENT_ADDRESS
+        // This should fail with NotAgentOwner since the modifier is checked first
         vm.startPrank(USER_GEORGE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AgentNotRegisteredToUser.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.NotAgentOwner.selector,
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
+            )
+        );
         vincentUserFacet.rePermitApp(FRANK_AGENT_ADDRESS, newAppId);
         vm.stopPrank();
     }
@@ -1370,8 +1410,16 @@ contract VincentUserFacetTest is Test {
         vm.stopPrank();
 
         // USER_GEORGE tries to set parameters for FRANK_AGENT_ADDRESS
+        // This should fail with NotAgentOwner since the modifier is checked first
         vm.startPrank(USER_GEORGE);
-        vm.expectRevert(abi.encodeWithSelector(LibVincentUserFacet.AgentNotRegisteredToUser.selector));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                LibVincentUserFacet.NotAgentOwner.selector,
+                USER_GEORGE, // caller
+                FRANK_AGENT_ADDRESS, // agent
+                USER_FRANK // registered owner
+            )
+        );
         vincentUserFacet.setAbilityPolicyParameters(
             FRANK_AGENT_ADDRESS, newAppId, newAppVersion, abilityIpfsCids, policyIpfsCids, policyParameterValues
         );
