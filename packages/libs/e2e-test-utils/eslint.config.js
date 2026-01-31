@@ -18,12 +18,7 @@ module.exports = [
             '{projectRoot}/vite.config.*',
             '{projectRoot}/esbuild.config.{js,cjs,mjs}',
           ],
-          ignoredDependencies: [
-            '@lit-protocol/vincent-app-sdk',
-            '@zerodev/ecdsa-validator',
-            '@zerodev/permissions',
-            '@zerodev/sdk',
-          ],
+          ignoredDependencies: ['@lit-protocol/contracts-sdk'],
         },
       ],
     },
