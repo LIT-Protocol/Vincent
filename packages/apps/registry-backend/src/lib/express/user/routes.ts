@@ -2,9 +2,11 @@ import type { Express } from 'express';
 
 import { completeInstallation } from '../../completeInstallation';
 import { completeRelayTransaction } from '../../completeRelayTransaction';
+import { completeWithdraw } from '../../completeWithdraw';
 import { getAgentAccount } from '../../getAgentAccount';
 import { getAgentFunds } from '../../getAgentFunds';
 import { installApp } from '../../installApp';
+import { requestWithdraw } from '../../requestWithdraw';
 import { uninstallApp } from '../../uninstallApp';
 import { requireApp, withApp } from '../app/requireApp';
 
@@ -95,6 +97,34 @@ export function registerRoutes(app: Express) {
         appId: req.vincentApp.appId,
         userControllerAddress: req.body.userControllerAddress,
         networks: req.body.networks,
+      });
+
+      res.json(result);
+      return;
+    }),
+  );
+
+  app.post(
+    '/user/:appId/request-withdraw',
+    requireApp(),
+    withApp(async (req, res) => {
+      const result = await requestWithdraw({
+        appId: req.vincentApp.appId,
+        userControllerAddress: req.body.userControllerAddress,
+        assets: req.body.assets,
+      });
+
+      res.json(result);
+      return;
+    }),
+  );
+
+  app.post(
+    '/user/:appId/complete-withdraw',
+    requireApp(),
+    withApp(async (req, res) => {
+      const result = await completeWithdraw({
+        withdrawals: req.body.withdrawals,
       });
 
       res.json(result);

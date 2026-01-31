@@ -38,5 +38,6 @@ export const env = createEnv({
     SMART_ACCOUNT_CHAIN_RPC_URL: z.string(),
     SMART_ACCOUNT_CHAIN_ID: z.coerce.number(),
     ZERODEV_PROJECT_ID: z.string(),
+    SPONSOR_WITHDRAW_GAS: BooleanOrBooleanStringSchema.default(false),
   },
 });
