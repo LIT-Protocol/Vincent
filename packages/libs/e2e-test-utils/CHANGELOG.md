@@ -1,3 +1,9 @@
+## 4.1.0 (2026-01-31)
+
+### 🚀 Features
+
+- Remove use of JWT for auth and replace with SIWE for Registry Backend API ([](https://github.com/LIT-Protocol/Vincent/commit/))
+
 # 4.0.0 (2026-01-30)
 
 ### ⚠️ Breaking Changes
