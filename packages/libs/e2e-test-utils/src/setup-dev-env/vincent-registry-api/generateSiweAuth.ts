@@ -1,6 +1,7 @@
+import crypto from 'crypto';
+
 import { Wallet } from 'ethers';
 import { getAddress } from 'viem';
-import crypto from 'crypto';
 
 /**
  * Generate a secure random nonce for SIWE
