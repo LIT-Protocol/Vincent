@@ -56,7 +56,6 @@ export async function completeAppInstallation({
     body: JSON.stringify({
       userControllerAddress: viemAccount.address,
       agentSignerAddress,
-      appId,
       appInstallation: {
         typedDataSignature: appInstallationSignature,
         dataToSign: appInstallationDataToSign,

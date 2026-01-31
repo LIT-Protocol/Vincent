@@ -1,25 +1,29 @@
-import { generateAppManagerJwt } from './generateAppManagerJwt';
+import { generateSiweAuth } from './generateSiweAuth';
 
 export async function registerAppVersion({
   vincentApiUrl,
   appManagerPrivateKey,
   appId,
   whatChanged,
+  domain,
 }: {
   vincentApiUrl: string;
   appManagerPrivateKey: `0x${string}`;
   appId: number;
   whatChanged: string;
+  domain?: string;
 }): Promise<{ newAppVersion: number }> {
-  const jwtToken = await generateAppManagerJwt({
+  const authHeader = await generateSiweAuth({
     appManagerPrivateKey,
+    vincentApiUrl,
+    domain,
   });
 
   const response = await fetch(`${vincentApiUrl}/app/${appId}/version`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwtToken}`,
+      Authorization: authHeader,
     },
     body: JSON.stringify({
       changes: whatChanged,
