@@ -7,6 +7,25 @@ module.exports = [
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       '@typescript-eslint/no-floating-promises': 'off',
+      '@nx/dependency-checks': [
+        'error',
+        {
+          buildTargets: ['build'],
+          checkVersionMismatches: true,
+          ignoredFiles: [
+            '{projectRoot}/eslint.config.{js,cjs,mjs}',
+            '{projectRoot}/jest.config.{js,cjs,mjs,ts}',
+            '{projectRoot}/vite.config.*',
+            '{projectRoot}/esbuild.config.{js,cjs,mjs}',
+          ],
+          ignoredDependencies: [
+            '@lit-protocol/vincent-app-sdk',
+            '@zerodev/ecdsa-validator',
+            '@zerodev/permissions',
+            '@zerodev/sdk',
+          ],
+        },
+      ],
     },
   },
 ];
