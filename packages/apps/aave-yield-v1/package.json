@@ -1,0 +1,21 @@
+{
+  "name": "@lit-protocol/aave-yield-v1",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "run": "tsx src/cli/run.ts"
+  },
+  "dependencies": {
+    "@lit-protocol/vincent-ability-aave": "workspace:*",
+    "@lit-protocol/vincent-ability-relay-link": "workspace:*",
+    "@lit-protocol/vincent-app-sdk": "workspace:*",
+    "dotenv": "^16.4.5",
+    "ethers": "5.8.0",
+    "tslib": "2.8.1",
+    "viem": "^2.41.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.4"
+  }
+}
